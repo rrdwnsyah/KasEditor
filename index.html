@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0B0F19" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="KasEditor" />
+  <title>KasEditor — Rekap Video ACC</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0B0F19;
+      --surface: #131926;
+      --elevated: #1A2234;
+      --border: rgba(255, 255, 255, 0.08);
+      --emerald: #10B981;
+      --indigo: #6366F1;
+      --spring: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: #F8FAFC;
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-bottom: 92px;
+    }
+    input, select, textarea { color-scheme: dark; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .glass-card {
+      background: linear-gradient(180deg, rgba(26,34,52,0.88) 0%, rgba(19,25,38,0.95) 100%);
+      border: 1px solid var(--border);
+    }
+    .hero-card {
+      background: linear-gradient(135deg, #1E1B4B 0%, #172554 48%, #064E3B 100%);
+      border: 1px solid rgba(255,255,255,0.14);
+      position: relative;
+      overflow: hidden;
+    }
+    .pressable { transition: transform 0.16s var(--spring), opacity 0.2s ease, border-color 0.2s ease; }
+    .pressable:active { transform: scale(0.965); }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-enter { animation: fadeSlideUp 0.36s var(--spring) both; }
+
+    @keyframes splashPulse {
+      0%, 100% { transform: scale(1); opacity: 0.95; }
+      50% { transform: scale(1.04); opacity: 1; }
+    }
+    .splash-logo { animation: splashPulse 1.6s ease-in-out infinite; }
+
+    @keyframes spinSlow { to { transform: rotate(360deg); } }
+    .spin-icon { animation: spinSlow 0.8s linear infinite; }
+
+    .sheet-backdrop {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.24s ease;
+    }
+    .sheet-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .sheet-panel {
+      transform: translateY(105%);
+      transition: transform 0.34s var(--spring);
+    }
+    .sheet-backdrop.open .sheet-panel {
+      transform: translateY(0);
+    }
+
+    .toast-pill {
+      transform: translate(-50%, -150%);
+      opacity: 0;
+      transition: transform 0.32s var(--spring), opacity 0.24s ease;
+      pointer-events: none;
+    }
+    .toast-pill.show {
+      transform: translate(-50%, 0);
+      opacity: 1;
+    }
+
+    .nav-item { transition: color 0.2s ease; }
+    .nav-item.active { color: #10B981; }
+    .nav-item.active .nav-pill { background: rgba(16,185,129,0.16); transform: translateY(-2px); }
+    .nav-pill { transition: background-color 0.2s ease, transform 0.24s var(--spring); }
+  </style>
+</head>
+<body class="antialiased">
+
+  <!-- ANIMATED SPLASH SCREEN -->
+  <div id="splashScreen" class="fixed inset-0 z-50 bg-[#0B0F19] flex flex-col items-center justify-center transition-opacity duration-500">
+    <img id="splashLogoImg" src="icons/icon-192.png" alt="KasEditor" class="splash-logo w-24 h-24 rounded-3xl shadow-2xl shadow-emerald-950/70 mb-5" />
+    <div class="text-3xl font-extrabold tracking-tight">
+      <span class="text-white">Kas</span><span class="text-emerald-400">Editor</span>
+    </div>
+    <p class="text-xs text-slate-400 mt-1.5">Fokus berkarya, pemasukan tetap terjaga</p>
+    <div class="w-28 h-1 rounded-full bg-slate-800 overflow-hidden mt-7">
+      <div class="h-full w-2/3 bg-gradient-to-r from-emerald-400 to-indigo-400 rounded-full animate-pulse"></div>
+    </div>
+  </div>
+
+  <!-- PIN LOCK SCREEN -->
+  <div id="pinLockScreen" class="hidden fixed inset-0 z-40 bg-[#0B0F19] flex flex-col items-center justify-center px-8">
+    <img id="pinLogoImg" src="icons/icon-192.png" alt="KasEditor" class="w-16 h-16 rounded-2xl mb-4" />
+    <h2 class="text-lg font-extrabold text-white">Masukkan PIN KasEditor</h2>
+    <p id="pinHint" class="text-xs text-slate-400 mt-1">Lindungi catatan pemasukan Anda</p>
+    <div id="pinDots" class="flex items-center gap-4 my-6">
+      <span class="pin-dot w-3.5 h-3.5 rounded-full bg-slate-800 border border-slate-700 transition-all"></span>
+      <span class="pin-dot w-3.5 h-3.5 rounded-full bg-slate-800 border border-slate-700 transition-all"></span>
+      <span class="pin-dot w-3.5 h-3.5 rounded-full bg-slate-800 border border-slate-700 transition-all"></span>
+      <span class="pin-dot w-3.5 h-3.5 rounded-full bg-slate-800 border border-slate-700 transition-all"></span>
+    </div>
+    <div class="grid grid-cols-3 gap-3.5 w-full max-w-xs">
+      <button type="button" data-pin="1" class="pin-key pressable h-14 rounded-2xl bg-[#131926] border border-white/5 text-xl font-bold">1</button>
+      <button type="button" data-pin="2" class="pin-key pressable h-14 rounded-2xl bg-[#131926] border border-white/5 text-xl font-bold">2</button>
+      <button type="button" data-pin="3" class="pin-key pressable h-14 rounded-2xl bg-[#131926] border border-white/5 text-xl font-bold">3</button>
+      <button type="button" data-pin="4" class="pin-key pressable h-14 rounded-2xl bg-[#131926] border border-white/5 text-xl font-bold">4</button>
+      <button type="button" data-pin="5" class="pin-key pressable h-14 rounded-2xl bg-[#131926] border border-white/5 text-xl font-bold">5</button>
+      <button type="button" data-pin="6" class="pin-key pressable h-14 rounded-2xl bg-[#131926] border border-white/5 text-xl font-bold">6</button>
+      <button type="button" data-pin="7" class="pin-key pressable h-14 rounded-2xl bg-[#131926] border border-white/5 text-xl font-bold">7</button>
+      <button type="button" data-pin="8" class="pin-key pressable h-14 rounded-2xl bg-[#131926] border border-white/5 text-xl font-bold">8</button>
+      <button type="button" data-pin="9" class="pin-key pressable h-14 rounded-2xl bg-[#131926] border border-white/5 text-xl font-bold">9</button>
+      <div></div>
+      <button type="button" data-pin="0" class="pin-key pressable h-14 rounded-2xl bg-[#131926] border border-white/5 text-xl font-bold">0</button>
+      <button type="button" id="pinBackspaceBtn" class="pressable h-14 rounded-2xl bg-transparent text-slate-400 flex items-center justify-center">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast-pill fixed top-4 left-1/2 z-50 flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-900/95 border border-emerald-500/30 shadow-2xl text-xs font-semibold text-white whitespace-nowrap">
+    <span id="toastDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+    <span id="toastText">Tersimpan</span>
+  </div>
+
+  <!-- MAIN APP CONTAINER -->
+  <div class="max-w-lg mx-auto px-4 pt-4 pb-6">
+    <!-- Top Header (Clean: No Spreadsheet icon here!) -->
+    <header class="flex items-center justify-between mb-4">
+      <div class="min-w-0 pr-2">
+        <div class="flex items-center gap-1.5">
+          <span id="statusDot" class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+          <span id="activeBookBadge" class="text-[11px] font-semibold text-emerald-400 truncate">EDD Creative · Utama</span>
+        </div>
+        <h1 class="text-xl font-extrabold tracking-tight text-white">KasEditor</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="offlineQueueBadge" class="hidden px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-[10px] font-bold text-amber-300">0 antrean</span>
+        <button id="refreshBtn" type="button" aria-label="Segarkan data"
+                class="pressable w-10 h-10 rounded-xl glass-card flex items-center justify-center text-slate-300 hover:text-white">
+          <svg id="refreshIcon" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- TAB 1: RINGKASAN -->
+    <main id="viewSummary" class="space-y-4">
+      <div id="errorBanner" class="hidden rounded-2xl p-3 bg-rose-500/15 border border-rose-500/35 text-xs text-rose-200"></div>
+
+      <!-- Hero Card -->
+      <section class="hero-card rounded-3xl p-5 shadow-xl animate-enter">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-200/90">Total Pemasukan IG</span>
+          <button id="ratePillBtn" type="button"
+                  class="pressable px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/10 hover:bg-white/20 text-emerald-100 border border-white/15 flex items-center gap-1">
+            <span id="heroRateText">Rp40.000 / video IG</span>
+            <svg class="w-3 h-3 text-emerald-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </button>
+        </div>
+        <div class="mt-2.5 flex items-center justify-between gap-2">
+          <div id="heroIncomeText" class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white tabular-nums">Rp 360.000</div>
+          <button id="privacyToggleBtn" type="button" aria-label="Mode Privasi Saldo"
+                  class="pressable w-10 h-10 rounded-xl bg-white/15 hover:bg-white/25 border border-white/15 flex items-center justify-center text-white shrink-0">
+            <svg id="eyeOpenIcon" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg id="eyeClosedIcon" class="w-5 h-5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+          </button>
+        </div>
+        <p class="text-[11px] text-slate-300/80 mt-1">Khusus video Instagram berstatus ACC · Konten TikTok dikecualikan</p>
+        <div class="grid grid-cols-3 gap-2.5 mt-4 pt-4 border-t border-white/10">
+          <div class="bg-black/25 rounded-2xl p-2.5">
+            <div class="text-[10px] text-slate-300">Video ACC</div>
+            <div id="kpiTotalAcc" class="text-lg font-extrabold text-white tabular-nums">0</div>
+          </div>
+          <div class="bg-black/25 rounded-2xl p-2.5">
+            <div class="text-[10px] text-slate-300">ACC IG</div>
+            <div id="kpiIgAcc" class="text-lg font-extrabold text-emerald-400 tabular-nums">0</div>
+          </div>
+          <div class="bg-black/25 rounded-2xl p-2.5">
+            <div class="text-[10px] text-slate-300">ACC TikTok</div>
+            <div id="kpiTtAcc" class="text-lg font-extrabold text-sky-300 tabular-nums">0</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ringkasan Visual (Grafik Bar Kontribusi Brand) -->
+      <section id="visualSummaryCard" class="hidden glass-card rounded-2xl p-4 space-y-3 animate-enter">
+        <h2 class="text-xs font-bold text-slate-200">Ringkasan Visual · Kontribusi Brand</h2>
+        <div id="visualBarsContainer" class="space-y-2.5"></div>
+      </section>
+
+      <!-- Filter Cepat & Daftar Brand -->
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="text-sm font-bold text-slate-200">Daftar Brand (<span id="brandCountNum">0</span>)</h2>
+        <div class="flex items-center bg-[#131926] p-1 rounded-xl border border-white/10 text-xs font-semibold">
+          <button type="button" data-sfilter="ALL" class="sfilter-btn px-2.5 py-1 rounded-lg bg-indigo-500/25 text-indigo-200">Semua</button>
+          <button type="button" data-sfilter="Instagram" class="sfilter-btn px-2.5 py-1 rounded-lg text-slate-400">IG</button>
+          <button type="button" data-sfilter="TikTok" class="sfilter-btn px-2.5 py-1 rounded-lg text-slate-400">TT</button>
+        </div>
+      </div>
+      <div id="brandList" class="space-y-2.5"></div>
+    </main>
+
+    <!-- TAB 2: LOG VIDEO -->
+    <main id="viewLogs" class="hidden space-y-3.5">
+      <div class="relative">
+        <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="logSearchInput" type="text" placeholder="Cari brand, judul, atau link..."
+               class="w-full h-11 pl-10 pr-4 rounded-2xl bg-[#131926] border border-white/10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400" />
+      </div>
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
+        <button type="button" data-lfilter="ALL" class="lfilter-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/35">Semua</button>
+        <button type="button" data-lfilter="Instagram" class="lfilter-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#131926] text-slate-400 border border-white/10">Instagram</button>
+        <button type="button" data-lfilter="TikTok" class="lfilter-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#131926] text-slate-400 border border-white/10">TikTok</button>
+        <button type="button" data-lfilter="ACC" class="lfilter-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#131926] text-slate-400 border border-white/10">Status: ACC</button>
+        <button type="button" data-lfilter="PENDING" class="lfilter-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#131926] text-slate-400 border border-white/10">Revisi / Menunggu</button>
+      </div>
+      <div id="logList" class="space-y-2.5"></div>
+      <button id="loadMoreLogsBtn" type="button" class="hidden w-full py-2.5 rounded-xl border border-white/10 text-xs font-bold text-emerald-400 hover:bg-white/5"></button>
+    </main>
+
+    <!-- TAB 3: PENGATURAN -->
+    <main id="viewSettings" class="hidden space-y-5">
+      <div>
+        <div class="text-xs font-bold text-slate-400 px-1 mb-2">Workspace &amp; Data</div>
+        <div class="glass-card rounded-2xl divide-y divide-white/5 overflow-hidden">
+          <button id="btnOpenSync" type="button" class="w-full px-4 py-3.5 flex items-center gap-3.5 text-left hover:bg-white/5">
+            <span class="w-9 h-9 rounded-xl bg-[#1A2234] flex items-center justify-center text-emerald-400 shrink-0">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+            </span>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-bold text-white">Buku &amp; Sinkronisasi</div>
+              <div id="subSyncInfo" class="text-xs text-slate-400 truncate">Atur URL API Pusat &amp; pindah buku Sheets</div>
+            </div>
+            <span class="text-slate-500">›</span>
+          </button>
+          <button id="btnOpenBrands" type="button" class="w-full px-4 py-3.5 flex items-center gap-3.5 text-left hover:bg-white/5">
+            <span class="w-9 h-9 rounded-xl bg-[#1A2234] flex items-center justify-center text-emerald-400 shrink-0">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </span>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-bold text-white">Kelola Daftar Brand</div>
+              <div id="subBrandInfo" class="text-xs text-slate-400 truncate">Tambah, ubah, atau hapus brand 2 arah</div>
+            </div>
+            <span class="text-slate-500">›</span>
+          </button>
+          <button id="btnOpenRate" type="button" class="w-full px-4 py-3.5 flex items-center gap-3.5 text-left hover:bg-white/5">
+            <span class="w-9 h-9 rounded-xl bg-[#1A2234] flex items-center justify-center text-emerald-400 shrink-0">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+            </span>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-bold text-white">Tarif per Video IG</div>
+              <div id="subRateInfo" class="text-xs text-slate-400 truncate">Rp40.000 / video</div>
+            </div>
+            <span class="text-slate-500">›</span>
+          </button>
+          <a id="btnOpenActiveSheet" href="https://docs.google.com/spreadsheets/d/1FsTKrxiRsz7tE0DgQGw7KB9hwNYhRZExG7dQKZg25ws/edit" target="_blank" rel="noopener noreferrer"
+             class="w-full px-4 py-3.5 flex items-center gap-3.5 text-left hover:bg-white/5">
+            <span class="w-9 h-9 rounded-xl bg-[#1A2234] flex items-center justify-center text-emerald-400 shrink-0">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+            </span>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-bold text-white">Buka Google Sheets Aktif</div>
+              <div id="subSheetTitle" class="text-xs text-slate-400 truncate">Rekap Video ACC</div>
+            </div>
+            <span class="text-slate-500">↗</span>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-xs font-bold text-slate-400 px-1 mb-2">General</div>
+        <div class="glass-card rounded-2xl divide-y divide-white/5 overflow-hidden">
+          <button id="btnOpenSecurity" type="button" class="w-full px-4 py-3.5 flex items-center gap-3.5 text-left hover:bg-white/5">
+            <span class="w-9 h-9 rounded-xl bg-[#1A2234] flex items-center justify-center text-emerald-400 shrink-0">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </span>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-bold text-white">Security &amp; Controls</div>
+              <div id="subSecurityInfo" class="text-xs text-slate-400 truncate">Kunci PIN 4-digit &amp; privasi otomatis</div>
+            </div>
+            <span class="text-slate-500">›</span>
+          </button>
+          <button id="btnOpenCurrency" type="button" class="w-full px-4 py-3.5 flex items-center gap-3.5 text-left hover:bg-white/5">
+            <span class="w-9 h-9 rounded-xl bg-[#1A2234] flex items-center justify-center text-emerald-400 shrink-0">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9.5a2.5 2.5 0 0 1 5 0c0 2-5 2-5 4a2.5 2.5 0 0 0 5 0"/></svg>
+            </span>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-bold text-white">Currency</div>
+              <div id="subCurrencyInfo" class="text-xs text-slate-400 truncate">IDR (Rp)</div>
+            </div>
+            <span class="text-slate-500">›</span>
+          </button>
+          <div class="px-4 py-3.5 flex items-center gap-3.5">
+            <span class="w-9 h-9 rounded-xl bg-[#1A2234] flex items-center justify-center text-emerald-400 shrink-0">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </span>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-bold text-white">Notification</div>
+              <div class="text-xs text-slate-400">Notifikasi status sinkronisasi</div>
+            </div>
+            <input id="toggleNotif" type="checkbox" checked class="w-5 h-5 accent-emerald-500 cursor-pointer" />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-xs font-bold text-slate-400 px-1 mb-2">Other</div>
+        <div class="glass-card rounded-2xl divide-y divide-white/5 overflow-hidden">
+          <button id="btnOpenPrefs" type="button" class="w-full px-4 py-3.5 flex items-center gap-3.5 text-left hover:bg-white/5">
+            <span class="w-9 h-9 rounded-xl bg-[#1A2234] flex items-center justify-center text-emerald-400 shrink-0">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/></svg>
+            </span>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-bold text-white">App Preferences</div>
+              <div id="subPrefsInfo" class="text-xs text-slate-400 truncate">Platform default &amp; cache IndexedDB</div>
+            </div>
+            <span class="text-slate-500">›</span>
+          </button>
+          <button id="btnOpenHelp" type="button" class="w-full px-4 py-3.5 flex items-center gap-3.5 text-left hover:bg-white/5">
+            <span class="w-9 h-9 rounded-xl bg-[#1A2234] flex items-center justify-center text-emerald-400 shrink-0">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-bold text-white">Help &amp; Support</div>
+              <div class="text-xs text-slate-400">Panduan cepat PWA &amp; sinkronisasi</div>
+            </div>
+            <span class="text-slate-500">›</span>
+          </button>
+          <button id="btnOpenPrivacy" type="button" class="w-full px-4 py-3.5 flex items-center gap-3.5 text-left hover:bg-white/5">
+            <span class="w-9 h-9 rounded-xl bg-[#1A2234] flex items-center justify-center text-emerald-400 shrink-0">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </span>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-bold text-white">Privacy Policy</div>
+              <div class="text-xs text-slate-400">Data 100% milik pribadi di Google Drive Anda</div>
+            </div>
+            <span class="text-slate-500">›</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="text-center pt-2 pb-4">
+        <div class="text-xs font-bold text-slate-300 tracking-wide">Made by Rrdwnsyah</div>
+        <div class="text-[11px] text-slate-500 mt-0.5">KasEditor v1.1.0 · PWA IndexedDB</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- FAB INPUT VIDEO -->
+  <button id="fabAddBtn" type="button"
+          class="pressable fixed bottom-24 right-5 z-20 h-14 px-5 rounded-full bg-emerald-500 text-slate-950 font-extrabold text-sm shadow-xl shadow-emerald-950/70 flex items-center gap-2">
+    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
+    <span>Input Video</span>
+  </button>
+
+  <!-- BOTTOM NAV (3 TABS) -->
+  <nav class="fixed bottom-0 inset-x-0 z-20 bg-[#0B0F19]/95 backdrop-blur-xl border-t border-white/10">
+    <div class="max-w-lg mx-auto grid grid-cols-3 py-2 px-2">
+      <button type="button" data-tab="summary" class="nav-item active flex flex-col items-center gap-1 py-1 text-slate-400">
+        <span class="nav-pill w-12 h-7 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        </span>
+        <span class="text-[11px] font-semibold">Ringkasan</span>
+      </button>
+      <button type="button" data-tab="logs" class="nav-item flex flex-col items-center gap-1 py-1 text-slate-400">
+        <span class="nav-pill w-12 h-7 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 13 5.22 3.48a.5.5 0 0 0 .78-.42V7.87a.5.5 0 0 0-.75-.43L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+        </span>
+        <span class="text-[11px] font-semibold">Log Video</span>
+      </button>
+      <button type="button" data-tab="settings" class="nav-item flex flex-col items-center gap-1 py-1 text-slate-400">
+        <span class="nav-pill w-12 h-7 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </span>
+        <span class="text-[11px] font-semibold">Pengaturan</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- GENERIC BOTTOM SHEET MODAL -->
+  <div id="modalBackdrop" class="sheet-backdrop fixed inset-0 z-30 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center">
+    <div id="modalPanel" class="sheet-panel w-full max-w-lg bg-[#131926] border-t sm:border border-white/10 rounded-t-3xl sm:rounded-3xl p-5 max-h-[88vh] overflow-y-auto shadow-2xl">
+      <div class="w-10 h-1 bg-slate-700 rounded-full mx-auto mb-3.5 sm:hidden"></div>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- SECONDARY PICKER SHEET (SEARCHABLE BRAND PICKER) -->
+  <div id="pickerBackdrop" class="sheet-backdrop fixed inset-0 z-40 bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center">
+    <div class="sheet-panel w-full max-w-lg bg-[#131926] border-t sm:border border-white/10 rounded-t-3xl sm:rounded-3xl p-5 max-h-[76vh] flex flex-col shadow-2xl">
+      <div class="w-10 h-1 bg-slate-700 rounded-full mx-auto mb-3 sm:hidden"></div>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-extrabold text-white">Pilih Brand</h3>
+        <button id="closePickerBtn" type="button" class="w-8 h-8 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center">✕</button>
+      </div>
+      <input id="brandPickerSearch" type="text" placeholder="Cari nama brand..."
+             class="w-full h-11 px-3.5 rounded-xl bg-[#0B0F19] border border-white/10 text-sm text-white mb-3 focus:outline-none focus:border-emerald-400" />
+      <div id="brandPickerList" class="space-y-2 overflow-y-auto flex-1"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const DEFAULT_SHEET_ID = '1FsTKrxiRsz7tE0DgQGw7KB9hwNYhRZExG7dQKZg25ws';
+      const SAMPLE_BRANDS = [
+        { rowIndex: 10, brand: 'Noonji Espresso Bar', platform: 'Instagram', pic: 'Dela' },
+        { rowIndex: 11, brand: 'Black Padle', platform: 'Instagram', pic: 'Dela' },
+        { rowIndex: 12, brand: 'Ragel Beauty Clinic', platform: 'Instagram', pic: 'Dela' },
+        { rowIndex: 13, brand: 'IO Konstruksi', platform: 'Instagram', pic: 'Dela' },
+        { rowIndex: 14, brand: 'Cece Apple', platform: 'Instagram', pic: 'Bryan' },
+        { rowIndex: 15, brand: 'Rempongi Mamak', platform: 'Instagram', pic: 'Bryan' },
+        { rowIndex: 16, brand: 'Cocorin', platform: 'Instagram', pic: 'Bryan' },
+        { rowIndex: 17, brand: 'Sip & Go Coffee House', platform: 'Instagram', pic: 'Bryan' },
+        { rowIndex: 18, brand: 'EDD Creative', platform: 'Instagram', pic: 'Melvin' },
+        { rowIndex: 19, brand: 'Noonji Espresso Bar', platform: 'TikTok', pic: 'Dela' }
+      ];
+      const SAMPLE_LOGS = [
+        { rowIndex: 5, brand: 'Rempongi Mamak', platform: 'Instagram', title: 'https://www.instagram.com/reel/DfMbNOXN9Nd/', date: '2026-11-21', status: 'ACC', note: 'Siapa yang kalau makan wajib ada sambal?' },
+        { rowIndex: 6, brand: 'Black Padle', platform: 'Instagram', title: 'https://www.instagram.com/reel/DfdkT9jTlYl/', date: '2026-11-21', status: 'ACC', note: 'Teaser black padel' }
+      ];
+
+      // =====================================================================
+      // INDEXEDDB LAYER (CACHE + SETTINGS + OFFLINE QUEUE)
+      // =====================================================================
+      const DB_NAME = 'KasEditorDB';
+      const DB_VER = 1;
+      let dbPromise = null;
+
+      function openDB() {
+        if (dbPromise) return dbPromise;
+        dbPromise = new Promise((resolve) => {
+          try {
+            if (!('indexedDB' in window)) return resolve(null);
+            const req = indexedDB.open(DB_NAME, DB_VER);
+            req.onupgradeneeded = (e) => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains('kv')) db.createObjectStore('kv');
+            };
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => resolve(null);
+          } catch (_) { resolve(null); }
+        });
+        return dbPromise;
+      }
+
+      async function idbGet(key, fallback) {
+        const db = await openDB();
+        if (!db) {
+          try {
+            const v = localStorage.getItem('ke_' + key);
+            return v ? JSON.parse(v) : fallback;
+          } catch (_) { return fallback; }
+        }
+        return new Promise((resolve) => {
+          try {
+            const tx = db.transaction('kv', 'readonly');
+            const req = tx.objectStore('kv').get(key);
+            req.onsuccess = () => resolve(req.result !== undefined ? req.result : fallback);
+            req.onerror = () => resolve(fallback);
+          } catch (_) { resolve(fallback); }
+        });
+      }
+
+      async function idbSet(key, val) {
+        const db = await openDB();
+        if (!db) {
+          try { localStorage.setItem('ke_' + key, JSON.stringify(val)); } catch (_) {}
+          return;
+        }
+        return new Promise((resolve) => {
+          try {
+            const tx = db.transaction('kv', 'readwrite');
+            tx.objectStore('kv').put(val, key);
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => resolve();
+          } catch (_) { resolve(); }
+        });
+      }
+
+      // =====================================================================
+      // APP STATE
+      // =====================================================================
+      const state = {
+        tab: 'summary',
+        apiUrl: '',
+        activeSheetId: DEFAULT_SHEET_ID,
+        sheetTitle: 'Rekap Video ACC - Freelance Video Editor',
+        books: [{ label: 'EDD Creative · Utama', spreadsheetId: DEFAULT_SHEET_ID }],
+        rate: 40000,
+        brands: SAMPLE_BRANDS.slice(),
+        logs: SAMPLE_LOGS.slice(),
+        currency: 'IDR',
+        hideIncome: false,
+        defaultHide: false,
+        notif: true,
+        defaultPlatform: 'Instagram',
+        pin: '',
+        offlineQueue: [],
+        summaryFilter: 'ALL',
+        logFilter: 'ALL',
+        logSearch: '',
+        visibleLogLimit: 30,
+        loading: false
+      };
+
+      const el = {
+        splash: document.getElementById('splashScreen'),
+        pinLock: document.getElementById('pinLockScreen'),
+        pinHint: document.getElementById('pinHint'),
+        toast: document.getElementById('toast'),
+        toastDot: document.getElementById('toastDot'),
+        toastText: document.getElementById('toastText'),
+        statusDot: document.getElementById('statusDot'),
+        activeBookBadge: document.getElementById('activeBookBadge'),
+        offlineQueueBadge: document.getElementById('offlineQueueBadge'),
+        refreshBtn: document.getElementById('refreshBtn'),
+        refreshIcon: document.getElementById('refreshIcon'),
+        errorBanner: document.getElementById('errorBanner'),
+        heroRateText: document.getElementById('heroRateText'),
+        heroIncomeText: document.getElementById('heroIncomeText'),
+        eyeOpenIcon: document.getElementById('eyeOpenIcon'),
+        eyeClosedIcon: document.getElementById('eyeClosedIcon'),
+        kpiTotalAcc: document.getElementById('kpiTotalAcc'),
+        kpiIgAcc: document.getElementById('kpiIgAcc'),
+        kpiTtAcc: document.getElementById('kpiTtAcc'),
+        visualSummaryCard: document.getElementById('visualSummaryCard'),
+        visualBarsContainer: document.getElementById('visualBarsContainer'),
+        brandCountNum: document.getElementById('brandCountNum'),
+        brandList: document.getElementById('brandList'),
+        logSearchInput: document.getElementById('logSearchInput'),
+        logList: document.getElementById('logList'),
+        loadMoreLogsBtn: document.getElementById('loadMoreLogsBtn'),
+        viewSummary: document.getElementById('viewSummary'),
+        viewLogs: document.getElementById('viewLogs'),
+        viewSettings: document.getElementById('viewSettings'),
+        fabAddBtn: document.getElementById('fabAddBtn'),
+        modalBackdrop: document.getElementById('modalBackdrop'),
+        modalContent: document.getElementById('modalContent'),
+        pickerBackdrop: document.getElementById('pickerBackdrop'),
+        brandPickerSearch: document.getElementById('brandPickerSearch'),
+        brandPickerList: document.getElementById('brandPickerList'),
+        closePickerBtn: document.getElementById('closePickerBtn'),
+        subSyncInfo: document.getElementById('subSyncInfo'),
+        subBrandInfo: document.getElementById('subBrandInfo'),
+        subRateInfo: document.getElementById('subRateInfo'),
+        subSheetTitle: document.getElementById('subSheetTitle'),
+        btnOpenActiveSheet: document.getElementById('btnOpenActiveSheet'),
+        subSecurityInfo: document.getElementById('subSecurityInfo'),
+        subCurrencyInfo: document.getElementById('subCurrencyInfo'),
+        subPrefsInfo: document.getElementById('subPrefsInfo'),
+        toggleNotif: document.getElementById('toggleNotif')
+      };
+
+      function esc(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+      function sym() {
+        return state.currency === 'USD' ? '$' : state.currency === 'MYR' ? 'RM' : state.currency === 'SGD' ? 'S$' : 'Rp';
+      }
+      function fmtMoney(n) {
+        const abs = Math.abs(Number(n) || 0).toLocaleString('id-ID');
+        return (Number(n) < 0 ? '-' : '') + sym() + abs;
+      }
+      function extractId(raw) {
+        const m = String(raw || '').trim().match(/\/d\/([a-zA-Z0-9-_]+)/);
+        return m ? m[1] : String(raw || '').trim();
+      }
+      function calcInc(log) {
+        return log.platform === 'Instagram' && log.status === 'ACC' ? state.rate : 0;
+      }
+
+      let toastTimer;
+      function showToast(msg, isErr) {
+        if (!state.notif && !isErr) return;
+        el.toastText.textContent = msg;
+        el.toastDot.className = 'w-2 h-2 rounded-full ' + (isErr ? 'bg-rose-400' : 'bg-emerald-400');
+        el.toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.toast.classList.remove('show'), 2500);
+      }
+
+      // =====================================================================
+      // SYNC ENGINE (CORS-SAFE TEXT/PLAIN POST + OFFLINE QUEUE)
+      // =====================================================================
+      async function saveSettings() {
+        await idbSet('settings', {
+          apiUrl: state.apiUrl,
+          activeSheetId: state.activeSheetId,
+          books: state.books,
+          currency: state.currency,
+          hideIncome: state.hideIncome,
+          defaultHide: state.defaultHide,
+          notif: state.notif,
+          defaultPlatform: state.defaultPlatform,
+          pin: state.pin
+        });
+      }
+
+      async function saveBookCache(sheetId, data) {
+        await idbSet('cache_' + sheetId, data);
+      }
+
+      async function loadBookCache(sheetId) {
+        const cached = await idbGet('cache_' + sheetId, null);
+        if (cached && cached.ok) {
+          state.sheetTitle = cached.spreadsheetTitle || state.sheetTitle;
+          state.rate = Number(cached.rate) || 40000;
+          state.brands = cached.brands || [];
+          state.logs = cached.logs || [];
+        }
+      }
+
+      async function flushOfflineQueue() {
+        if (!state.apiUrl || !navigator.onLine || state.offlineQueue.length === 0) return;
+        const remaining = [];
+        for (const payload of state.offlineQueue) {
+          try {
+            const resp = await fetch(state.apiUrl, {
+              method: 'POST',
+              redirect: 'follow',
+              headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+              body: JSON.stringify(payload)
+            });
+            const data = await resp.json();
+            if (!data.ok) throw new Error(data.error || 'Sync gagal');
+          } catch (_) {
+            remaining.push(payload);
+          }
+        }
+        state.offlineQueue = remaining;
+        await idbSet('offlineQueue', remaining);
+      }
+
+      async function fetchLive(showFeedback) {
+        if (!state.apiUrl) {
+          renderAll();
+          return;
+        }
+        state.loading = true;
+        el.refreshIcon.classList.add('spin-icon');
+        el.errorBanner.classList.add('hidden');
+        try {
+          await flushOfflineQueue();
+          const url = state.apiUrl + (state.apiUrl.includes('?') ? '&' : '?') + 'spreadsheetId=' + encodeURIComponent(state.activeSheetId);
+          const resp = await fetch(url, { method: 'GET', redirect: 'follow' });
+          const data = await resp.json();
+          if (!data.ok) throw new Error(data.error || 'Respons API gagal');
+          state.sheetTitle = data.spreadsheetTitle || state.sheetTitle;
+          state.rate = Number(data.rate) || 40000;
+          state.brands = data.brands || [];
+          state.logs = data.logs || [];
+          await saveBookCache(state.activeSheetId, data);
+          if (showFeedback) showToast('Tersinkron dengan Google Sheets');
+        } catch (err) {
+          el.errorBanner.textContent = 'Mode offline / gagal sinkron: ' + (err.message || err);
+          el.errorBanner.classList.remove('hidden');
+        } finally {
+          state.loading = false;
+          el.refreshIcon.classList.remove('spin-icon');
+          renderAll();
+        }
+      }
+
+      async function postAction(payload, successMsg, optimisticFn) {
+        if (optimisticFn) {
+          optimisticFn();
+          renderAll();
+        }
+        if (!state.apiUrl) {
+          await saveBookCache(state.activeSheetId, {
+            ok: true, spreadsheetTitle: state.sheetTitle, rate: state.rate, brands: state.brands, logs: state.logs
+          });
+          showToast(successMsg + ' (Lokal)');
+          return;
+        }
+        if (!navigator.onLine) {
+          state.offlineQueue.push(payload);
+          await idbSet('offlineQueue', state.offlineQueue);
+          renderAll();
+          showToast('Offline: disimpan ke antrean sinkronisasi');
+          return;
+        }
+        el.refreshIcon.classList.add('spin-icon');
+        try {
+          const resp = await fetch(state.apiUrl, {
+            method: 'POST',
+            redirect: 'follow',
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+            body: JSON.stringify(payload)
+          });
+          const data = await resp.json();
+          if (!data.ok) throw new Error(data.error || 'Gagal menyimpan');
+          state.sheetTitle = data.spreadsheetTitle || state.sheetTitle;
+          state.rate = Number(data.rate) || 40000;
+          state.brands = data.brands || [];
+          state.logs = data.logs || [];
+          await saveBookCache(state.activeSheetId, data);
+          showToast(successMsg);
+        } catch (_) {
+          state.offlineQueue.push(payload);
+          await idbSet('offlineQueue', state.offlineQueue);
+          showToast('Sinyal lemah: masuk antrean offline', true);
+        } finally {
+          el.refreshIcon.classList.remove('spin-icon');
+          renderAll();
+        }
+      }
+
+      // =====================================================================
+      // RENDERING
+      // =====================================================================
+      function renderAll() {
+        const activeBook = state.books.find(b => b.spreadsheetId === state.activeSheetId) || { label: state.sheetTitle };
+        el.activeBookBadge.textContent = state.apiUrl ? activeBook.label : activeBook.label + ' · Belum terhubung API';
+        el.statusDot.className = 'w-2 h-2 rounded-full shrink-0 ' + (state.apiUrl ? 'bg-emerald-400' : 'bg-amber-400');
+
+        if (state.offlineQueue.length > 0) {
+          el.offlineQueueBadge.textContent = state.offlineQueue.length + ' antrean';
+          el.offlineQueueBadge.classList.remove('hidden');
+        } else {
+          el.offlineQueueBadge.classList.add('hidden');
+        }
+
+        renderSummary();
+        renderLogs();
+        renderSettingsInfo();
+      }
+
+      function renderSummary() {
+        let totalAcc = 0, igAcc = 0, ttAcc = 0, totalInc = 0;
+        const cntMap = {}, incMap = {}, dateMap = {};
+
+        state.logs.forEach(l => {
+          if (l.status === 'ACC') {
+            totalAcc++;
+            if (l.platform === 'Instagram') igAcc++;
+            if (l.platform === 'TikTok') ttAcc++;
+            const inc = calcInc(l);
+            totalInc += inc;
+            const k = l.brand + '__' + l.platform;
+            cntMap[k] = (cntMap[k] || 0) + 1;
+            incMap[k] = (incMap[k] || 0) + inc;
+            if (l.date && (!dateMap[k] || l.date > dateMap[k])) dateMap[k] = l.date;
+          }
+        });
+
+        el.heroRateText.textContent = state.hideIncome ? (sym() + ' ••••• / video') : (fmtMoney(state.rate) + ' / video IG');
+        el.heroIncomeText.textContent = state.hideIncome ? (sym() + ' ••••••') : fmtMoney(totalInc);
+        el.eyeOpenIcon.classList.toggle('hidden', state.hideIncome);
+        el.eyeClosedIcon.classList.toggle('hidden', !state.hideIncome);
+        el.kpiTotalAcc.textContent = totalAcc;
+        el.kpiIgAcc.textContent = igAcc;
+        el.kpiTtAcc.textContent = ttAcc;
+
+        const visual = state.brands
+          .map(b => ({ b, c: cntMap[b.brand + '__' + b.platform] || 0 }))
+          .filter(x => x.c > 0)
+          .sort((a, b) => b.c - a.c);
+        if (visual.length > 0) {
+          const maxC = visual[0].c;
+          el.visualSummaryCard.classList.remove('hidden');
+          el.visualBarsContainer.innerHTML = visual.map(x => {
+            const pct = Math.round((x.c / maxC) * 100);
+            const isTt = x.b.platform === 'TikTok';
+            return `<div>
+              <div class="flex justify-between text-xs mb-1 gap-2">
+                <span class="font-semibold text-slate-200 truncate">${esc(x.b.brand)} (${isTt ? 'TT' : 'IG'})</span>
+                <span class="font-bold shrink-0 ${isTt ? 'text-sky-300' : 'text-emerald-400'}">${x.c} video</span>
+              </div>
+              <div class="h-2 rounded-full bg-[#1A2234] overflow-hidden">
+                <div class="h-full rounded-full ${isTt ? 'bg-sky-400' : 'bg-emerald-400'}" style="width:${pct}%"></div>
+              </div>
+            </div>`;
+          }).join('');
+        } else {
+          el.visualSummaryCard.classList.add('hidden');
+        }
+
+        const filtered = state.brands.filter(b => state.summaryFilter === 'ALL' ? true : b.platform === state.summaryFilter);
+        el.brandCountNum.textContent = filtered.length;
+        el.brandList.innerHTML = filtered.map(b => {
+          const k = b.brand + '__' + b.platform;
+          const cnt = cntMap[k] || 0;
+          const inc = incMap[k] || 0;
+          const isTt = b.platform === 'TikTok';
+          const incLabel = isTt
+            ? '<span class="text-[11px] text-slate-500">Non-tarif IG</span>'
+            : (state.hideIncome
+                ? `<span class="text-xs font-bold text-slate-400 tracking-wider">${sym()} ••••••</span>`
+                : `<span class="text-xs font-extrabold ${inc > 0 ? 'text-emerald-400' : 'text-slate-500'}">${fmtMoney(inc)}</span>`);
+          return `<button type="button" data-qbrand="${esc(b.brand)}" data-qplat="${esc(b.platform)}"
+            class="brand-row pressable w-full text-left glass-card rounded-2xl p-3.5 flex items-center justify-between gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-sm text-white truncate">${esc(b.brand)}</span>
+                <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold ${isTt ? 'bg-sky-500/15 text-sky-300' : 'bg-fuchsia-500/15 text-fuchsia-300'}">${esc(b.platform)}</span>
+              </div>
+              <div class="text-[11px] text-slate-400 mt-1 truncate">PIC: ${esc(b.pic)} · ACC: ${dateMap[k] || '-'}</div>
+            </div>
+            <div class="text-right shrink-0">
+              <div class="text-xs font-bold text-slate-200">${cnt} vid</div>
+              <div class="mt-0.5">${incLabel}</div>
+            </div>
+          </button>`;
+        }).join('');
+      }
+
+      function renderLogs() {
+        const q = state.logSearch.trim().toLowerCase();
+        const filtered = state.logs.filter(l => {
+          if (state.logFilter === 'Instagram' && l.platform !== 'Instagram') return false;
+          if (state.logFilter === 'TikTok' && l.platform !== 'TikTok') return false;
+          if (state.logFilter === 'ACC' && l.status !== 'ACC') return false;
+          if (state.logFilter === 'PENDING' && l.status === 'ACC') return false;
+          if (q && !(l.brand + ' ' + l.platform + ' ' + l.title + ' ' + l.note + ' ' + l.date).toLowerCase().includes(q)) return false;
+          return true;
+        }).slice().reverse();
+
+        const shown = filtered.slice(0, state.visibleLogLimit);
+        if (shown.length === 0) {
+          el.logList.innerHTML = '<div class="glass-card rounded-2xl p-8 text-center text-xs text-slate-400">Belum ada data video yang cocok.</div>';
+          el.loadMoreLogsBtn.classList.add('hidden');
+          return;
+        }
+        el.logList.innerHTML = shown.map(item => {
+          const inc = calcInc(item);
+          const isUrl = /^https?:\/\//i.test(item.title);
+          const money = state.hideIncome ? (sym() + ' ••••••') : (inc > 0 ? '+' + fmtMoney(inc) : fmtMoney(0));
+          return `<article class="glass-card rounded-2xl p-3.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-emerald-400 truncate">${esc(item.brand)} · ${esc(item.platform)} · ${esc(item.status)}</span>
+              <button type="button" data-erow="${item.rowIndex}" class="edit-log-btn px-2.5 py-1 rounded-lg bg-slate-800 text-[11px] font-semibold text-slate-300">Edit</button>
+            </div>
+            <div class="mt-2">
+              ${isUrl
+                ? `<a href="${esc(item.title)}" target="_blank" rel="noopener noreferrer" class="text-xs text-indigo-300 underline break-all line-clamp-2">${esc(item.title)}</a>`
+                : `<div class="text-sm font-semibold text-white">${esc(item.title)}</div>`}
+            </div>
+            ${item.note ? `<p class="text-xs text-slate-400 mt-1">${esc(item.note)}</p>` : ''}
+            <div class="mt-2.5 pt-2 border-t border-white/5 flex justify-between text-xs">
+              <span class="text-slate-400">ACC: ${item.date || 'Belum diisi'}</span>
+              <span class="font-extrabold ${!state.hideIncome && inc > 0 ? 'text-emerald-400' : 'text-slate-500'}">${money}</span>
+            </div>
+          </article>`;
+        }).join('');
+
+        if (filtered.length > state.visibleLogLimit) {
+          el.loadMoreLogsBtn.textContent = `Muat lebih banyak (${filtered.length - state.visibleLogLimit} tersisa)`;
+          el.loadMoreLogsBtn.classList.remove('hidden');
+        } else {
+          el.loadMoreLogsBtn.classList.add('hidden');
+        }
+      }
+
+      function renderSettingsInfo() {
+        el.subSyncInfo.textContent = `${state.books.length} buku · ${state.apiUrl ? 'API terhubung' : 'API belum diisi'}`;
+        el.subBrandInfo.textContent = `${state.brands.length} brand aktif · Sinkron 2 arah ke Sheets`;
+        el.subRateInfo.textContent = state.hideIncome ? `${sym()} ••••• / video IG` : `${fmtMoney(state.rate)} / video IG`;
+        el.subSheetTitle.textContent = state.sheetTitle;
+        el.btnOpenActiveSheet.href = `https://docs.google.com/spreadsheets/d/${state.activeSheetId}/edit`;
+        el.subSecurityInfo.textContent = state.pin.length === 4 ? 'Kunci PIN 4-digit aktif' : 'PIN nonaktif · Atur privasi otomatis';
+        el.subCurrencyInfo.textContent = `${state.currency} (${sym()})`;
+        el.subPrefsInfo.textContent = `Default: ${state.defaultPlatform} · IndexedDB aktif`;
+        el.toggleNotif.checked = state.notif;
+      }
+
+      // =====================================================================
+      // MODALS (VIDEO FORM, BRAND PICKER, RATE, BRANDS, SYNC, SECURITY, ETC.)
+      // =====================================================================
+      function openModal(html) {
+        el.modalContent.innerHTML = html;
+        el.modalBackdrop.classList.add('open');
+      }
+      function closeModal() {
+        el.modalBackdrop.classList.remove('open');
+      }
+
+      function openBrandPicker(selected, onPick) {
+        const names = Array.from(new Set(state.brands.map(b => b.brand)));
+        if (names.length === 0) names.push('Noonji Espresso Bar');
+        function draw(q) {
+          const list = names.filter(n => n.toLowerCase().includes(q.toLowerCase()));
+          el.brandPickerList.innerHTML = list.map(n => {
+            const act = n === selected;
+            return `<button type="button" data-pick="${esc(n)}" class="pick-item w-full px-3.5 py-3 rounded-xl text-left flex items-center justify-between border ${act ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 font-bold' : 'bg-[#0B0F19] border-white/10 text-white font-medium'}">
+              <span class="truncate">${esc(n)}</span>${act ? '<span>✓</span>' : ''}
+            </button>`;
+          }).join('');
+        }
+        el.brandPickerSearch.value = '';
+        draw('');
+        el.brandPickerSearch.oninput = (e) => draw(e.target.value);
+        el.brandPickerList.onclick = (e) => {
+          const btn = e.target.closest('.pick-item');
+          if (!btn) return;
+          el.pickerBackdrop.classList.remove('open');
+          onPick(btn.dataset.pick);
+        };
+        el.pickerBackdrop.classList.add('open');
+      }
+
+      function openVideoModal(existing, preBrand, prePlat) {
+        const names = Array.from(new Set(state.brands.map(b => b.brand)));
+        let selBrand = (existing && existing.brand) || preBrand || names[0] || 'Noonji Espresso Bar';
+        let selPlat = (existing && existing.platform) || prePlat || state.defaultPlatform;
+        let selStat = (existing && existing.status) || 'ACC';
+        const today = new Date().toISOString().slice(0, 10);
+
+        openModal(`
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-base font-extrabold text-white">${existing ? 'Edit Data Video' : 'Input Video Baru'}</h3>
+            <button type="button" id="mClose" class="w-8 h-8 rounded-full bg-slate-800 text-slate-300">✕</button>
+          </div>
+          <div class="space-y-3.5">
+            <div>
+              <label class="text-xs font-semibold text-slate-400 block mb-1.5">Nama Brand</label>
+              <button type="button" id="mBrandBtn" class="w-full h-11 px-3.5 rounded-xl bg-[#0B0F19] border border-white/10 flex items-center justify-between gap-2 text-left">
+                <span id="mBrandLbl" class="text-sm font-bold text-white truncate">${esc(selBrand)}</span>
+                <span class="text-slate-400 shrink-0">▾</span>
+              </button>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-400 block mb-1.5">Platform</label>
+              <div class="grid grid-cols-2 gap-2.5">
+                <button type="button" data-mp="Instagram" class="mp-btn h-10 rounded-xl text-xs font-bold border"></button>
+                <button type="button" data-mp="TikTok" class="mp-btn h-10 rounded-xl text-xs font-bold border"></button>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-400 block mb-1.5">Judul / Link Reels Video</label>
+              <input id="mTitle" type="text" value="${esc(existing ? existing.title : '')}" placeholder="Contoh: Reel 4 atau link Instagram" class="w-full h-11 px-3.5 rounded-xl bg-[#0B0F19] border border-white/10 text-sm text-white" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-400 block mb-1.5">Tanggal ACC</label>
+              <input id="mDate" type="date" value="${esc(existing && existing.date ? existing.date : today)}" class="w-full h-11 px-3.5 rounded-xl bg-[#0B0F19] border border-white/10 text-sm text-white" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-400 block mb-1.5">Status Persetujuan</label>
+              <div class="grid grid-cols-3 gap-2">
+                <button type="button" data-ms="ACC" class="ms-btn h-10 rounded-xl text-xs font-bold border">ACC</button>
+                <button type="button" data-ms="Revisi" class="ms-btn h-10 rounded-xl text-xs font-bold border">Revisi</button>
+                <button type="button" data-ms="Menunggu ACC" class="ms-btn h-10 rounded-xl text-xs font-bold border">Menunggu</button>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-400 block mb-1.5">Catatan (Opsional)</label>
+              <input id="mNote" type="text" value="${esc(existing ? existing.note : '')}" placeholder="Catatan singkat" class="w-full h-11 px-3.5 rounded-xl bg-[#0B0F19] border border-white/10 text-sm text-white" />
+            </div>
+            <div id="mEstBox" class="rounded-xl px-3.5 py-2.5 flex justify-between items-center text-xs border"></div>
+            <div class="flex gap-2.5 pt-1">
+              ${existing ? '<button type="button" id="mDel" class="h-12 px-4 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 font-bold text-sm">Hapus</button>' : ''}
+              <button type="button" id="mSave" class="flex-1 h-12 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-sm">${existing ? 'Simpan Perubahan' : 'Simpan ke Rekap'}</button>
+            </div>
+          </div>
+        `);
+
+        function syncPills() {
+          document.querySelectorAll('.mp-btn').forEach(b => {
+            const p = b.dataset.mp;
+            b.textContent = p;
+            const act = p === selPlat;
+            b.className = 'mp-btn h-10 rounded-xl text-xs font-bold border transition ' + (act
+              ? (p === 'TikTok' ? 'bg-sky-500/20 border-sky-400 text-sky-300' : 'bg-fuchsia-500/20 border-fuchsia-400 text-fuchsia-300')
+              : 'bg-[#0B0F19] border-white/10 text-slate-400');
+          });
+          document.querySelectorAll('.ms-btn').forEach(b => {
+            const s = b.dataset.ms;
+            const act = s === selStat;
+            const col = s === 'ACC' ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300'
+              : s === 'Revisi' ? 'bg-rose-500/20 border-rose-400 text-rose-300'
+              : 'bg-amber-500/20 border-amber-400 text-amber-300';
+            b.className = 'ms-btn h-10 rounded-xl text-xs font-bold border transition ' + (act ? col : 'bg-[#0B0F19] border-white/10 text-slate-400');
+          });
+          const bill = selPlat === 'Instagram' && selStat === 'ACC';
+          const box = document.getElementById('mEstBox');
+          box.className = 'rounded-xl px-3.5 py-2.5 flex justify-between items-center text-xs border ' + (bill ? 'bg-emerald-500/10 border-emerald-500/35 text-emerald-300' : 'bg-[#1A2234] border-white/10 text-slate-400');
+          const valStr = bill ? (state.hideIncome ? sym() + ' ••••••' : '+' + fmtMoney(state.rate)) : (selPlat === 'TikTok' ? fmtMoney(0) + ' (TikTok dikecualikan)' : fmtMoney(0) + ' (Belum ACC)');
+          box.innerHTML = `<span>Estimasi Pemasukan</span><strong class="font-extrabold">${valStr}</strong>`;
+        }
+        syncPills();
+
+        document.getElementById('mClose').onclick = closeModal;
+        document.getElementById('mBrandBtn').onclick = () => openBrandPicker(selBrand, (picked) => {
+          selBrand = picked;
+          document.getElementById('mBrandLbl').textContent = picked;
+        });
+        document.querySelectorAll('.mp-btn').forEach(b => b.onclick = () => { selPlat = b.dataset.mp; syncPills(); });
+        document.querySelectorAll('.ms-btn').forEach(b => b.onclick = () => { selStat = b.dataset.ms; syncPills(); });
+
+        if (existing) {
+          document.getElementById('mDel').onclick = () => {
+            closeModal();
+            postAction(
+              { action: 'delete', spreadsheetId: state.activeSheetId, rowIndex: existing.rowIndex },
+              'Entri video dihapus',
+              () => { state.logs = state.logs.filter(x => x.rowIndex !== existing.rowIndex); }
+            );
+          };
+        }
+        document.getElementById('mSave').onclick = () => {
+          const title = document.getElementById('mTitle').value.trim();
+          if (!title) { showToast('Judul atau link wajib diisi', true); return; }
+          const entry = {
+            rowIndex: existing ? existing.rowIndex : null,
+            brand: selBrand,
+            platform: selPlat,
+            title,
+            date: document.getElementById('mDate').value,
+            status: selStat,
+            note: document.getElementById('mNote').value.trim()
+          };
+          closeModal();
+          postAction(
+            { action: 'save', spreadsheetId: state.activeSheetId, entry },
+            existing ? 'Perubahan disimpan' : 'Video tersimpan',
+            () => {
+              if (existing) {
+                const i = state.logs.findIndex(x => x.rowIndex === existing.rowIndex);
+                if (i >= 0) state.logs[i] = entry;
+              } else {
+                const maxR = state.logs.reduce((m, x) => Math.max(m, x.rowIndex || 4), 4);
+                entry.rowIndex = maxR + 1;
+                state.logs.push(entry);
+              }
+            }
+          );
+        };
+      }
+
+      // Settings Modals
+      document.getElementById('btnOpenSync').onclick = () => {
+        openModal(`
+          <h3 class="text-base font-extrabold text-white mb-3">Buku &amp; Sinkronisasi</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">URL API Pusat (/exec) — tersimpan lokal di HP</label>
+              <input id="sApiUrl" type="url" value="${esc(state.apiUrl)}" placeholder="https://script.google.com/macros/s/.../exec" class="w-full h-11 px-3 rounded-xl bg-[#0B0F19] border border-white/10 text-xs text-white" />
+            </div>
+            <button id="sSaveApi" type="button" class="w-full h-11 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-sm">Simpan &amp; Sambungkan</button>
+            <div class="border-t border-white/10 pt-3">
+              <div class="text-xs font-bold text-slate-300 mb-2">Pilih Buku Aktif</div>
+              <div id="sBookList" class="space-y-2">
+                ${state.books.map(b => {
+                  const act = b.spreadsheetId === state.activeSheetId;
+                  return `<button type="button" data-sid="${esc(b.spreadsheetId)}" class="sbook-item w-full p-3 rounded-xl text-left flex justify-between items-center border ${act ? 'bg-emerald-500/15 border-emerald-500' : 'bg-[#0B0F19] border-white/10'}">
+                    <div class="min-w-0 pr-2"><div class="text-xs font-bold text-white truncate">${esc(b.label)}</div><div class="text-[10px] text-slate-400 truncate">${esc(b.spreadsheetId)}</div></div>
+                    ${act ? '<span class="text-emerald-400 font-bold">✓</span>' : ''}
+                  </button>`;
+                }).join('')}
+              </div>
+            </div>
+            <div class="border-t border-white/10 pt-3 space-y-2">
+              <div class="text-xs font-bold text-slate-300">Tambah Buku / Link Google Sheets Baru</div>
+              <input id="sNewLabel" type="text" placeholder="Nama Buku (misal: Buku 2027 / Agensi B)" class="w-full h-10 px-3 rounded-xl bg-[#0B0F19] border border-white/10 text-xs text-white" />
+              <input id="sNewLink" type="text" placeholder="Tempel Link Google Sheets" class="w-full h-10 px-3 rounded-xl bg-[#0B0F19] border border-white/10 text-xs text-white" />
+              <button id="sAddBook" type="button" class="w-full h-10 rounded-xl border border-emerald-500 text-emerald-400 font-bold text-xs">Tambahkan &amp; Aktifkan Buku</button>
+            </div>
+          </div>
+        `);
+        document.getElementById('sSaveApi').onclick = async () => {
+          const u = document.getElementById('sApiUrl').value.trim();
+          if (!u.startsWith('http')) { showToast('Masukkan URL /exec yang valid', true); return; }
+          state.apiUrl = u;
+          await saveSettings();
+          closeModal();
+          switchTab('summary');
+          await fetchLive(true);
+        };
+        document.querySelectorAll('.sbook-item').forEach(b => b.onclick = async () => {
+          state.activeSheetId = b.dataset.sid;
+          state.visibleLogLimit = 30;
+          await saveSettings();
+          await loadBookCache(state.activeSheetId);
+          closeModal();
+          switchTab('summary');
+          renderAll();
+          await fetchLive(true);
+        });
+        document.getElementById('sAddBook').onclick = async () => {
+          const lbl = document.getElementById('sNewLabel').value.trim();
+          const sid = extractId(document.getElementById('sNewLink').value);
+          if (!lbl || sid.length < 15) { showToast('Isi nama buku & link Google Sheets valid', true); return; }
+          state.books.push({ label: lbl, spreadsheetId: sid });
+          state.activeSheetId = sid;
+          await saveSettings();
+          closeModal();
+          switchTab('summary');
+          await fetchLive(true);
+        };
+      };
+
+      function openRateModal() {
+        openModal(`
+          <h3 class="text-base font-extrabold text-white mb-1">Ubah Tarif per Video IG</h3>
+          <p class="text-xs text-slate-400 mb-3">Otomatis memperbarui sel tarif di Google Sheets.</p>
+          <input id="rInput" type="number" value="${state.rate}" class="w-full h-11 px-3.5 rounded-xl bg-[#0B0F19] border border-white/10 text-sm text-white mb-3" />
+          <button id="rSave" type="button" class="w-full h-11 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-sm">Simpan Tarif Baru</button>
+        `);
+        document.getElementById('rSave').onclick = () => {
+          const v = parseInt(document.getElementById('rInput').value, 10);
+          if (isNaN(v) || v < 0) { showToast('Tarif tidak valid', true); return; }
+          closeModal();
+          postAction({ action: 'updateRate', spreadsheetId: state.activeSheetId, rate: v }, 'Tarif diperbarui ke ' + fmtMoney(v), () => { state.rate = v; });
+        };
+      }
+      document.getElementById('btnOpenRate').onclick = openRateModal;
+      document.getElementById('ratePillBtn').onclick = openRateModal;
+
+      function openBrandEditor(existing) {
+        let plat = existing ? existing.platform : 'Instagram';
+        openModal(`
+          <h3 class="text-base font-extrabold text-white mb-3">${existing ? 'Edit Brand' : 'Tambah Brand Baru'}</h3>
+          <div class="space-y-3">
+            <input id="bName" type="text" value="${esc(existing ? existing.brand : '')}" placeholder="Nama Brand" class="w-full h-11 px-3.5 rounded-xl bg-[#0B0F19] border border-white/10 text-sm text-white" />
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" data-bp="Instagram" class="bp-btn h-10 rounded-xl text-xs font-bold border">Instagram</button>
+              <button type="button" data-bp="TikTok" class="bp-btn h-10 rounded-xl text-xs font-bold border">TikTok</button>
+            </div>
+            <input id="bPic" type="text" value="${esc(existing ? existing.pic : '')}" placeholder="PIC / Sosmed Specialist" class="w-full h-11 px-3.5 rounded-xl bg-[#0B0F19] border border-white/10 text-sm text-white" />
+            <div class="flex gap-2">
+              ${existing ? '<button id="bDel" type="button" class="h-11 px-4 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 font-bold text-xs">Hapus</button>' : ''}
+              <button id="bSave" type="button" class="flex-1 h-11 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-sm">Simpan Brand</button>
+            </div>
+          </div>
+        `);
+        function syncBp() {
+          document.querySelectorAll('.bp-btn').forEach(b => {
+            const act = b.dataset.bp === plat;
+            b.className = 'bp-btn h-10 rounded-xl text-xs font-bold border ' + (act ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300' : 'bg-[#0B0F19] border-white/10 text-slate-400');
+          });
+        }
+        syncBp();
+        document.querySelectorAll('.bp-btn').forEach(b => b.onclick = () => { plat = b.dataset.bp; syncBp(); });
+        if (existing) {
+          document.getElementById('bDel').onclick = () => {
+            closeModal();
+            postAction({ action: 'deleteBrand', spreadsheetId: state.activeSheetId, rowIndex: existing.rowIndex }, 'Brand dihapus', () => {
+              state.brands = state.brands.filter(x => x.rowIndex !== existing.rowIndex);
+            });
+          };
+        }
+        document.getElementById('bSave').onclick = () => {
+          const brand = document.getElementById('bName').value.trim();
+          const pic = document.getElementById('bPic').value.trim() || '-';
+          if (!brand) { showToast('Nama brand wajib diisi', true); return; }
+          closeModal();
+          postAction(
+            { action: 'saveBrand', spreadsheetId: state.activeSheetId, rowIndex: existing ? existing.rowIndex : null, brand, platform: plat, pic },
+            existing ? 'Brand diperbarui' : 'Brand baru ditambahkan',
+            () => {
+              if (existing) {
+                const i = state.brands.findIndex(x => x.rowIndex === existing.rowIndex);
+                if (i >= 0) state.brands[i] = { rowIndex: existing.rowIndex, brand, platform: plat, pic };
+              } else {
+                state.brands.push({ rowIndex: 10 + state.brands.length, brand, platform: plat, pic });
+              }
+            }
+          );
+        };
+      }
+
+      document.getElementById('btnOpenBrands').onclick = () => {
+        openModal(`
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-base font-extrabold text-white">Kelola Daftar Brand</h3>
+            <button id="addNewBrandBtn" type="button" class="px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-xs">+ Tambah</button>
+          </div>
+          <div class="space-y-2">
+            ${state.brands.map((b, i) => `<button type="button" data-bi="${i}" class="edit-b-row w-full p-3 rounded-xl bg-[#0B0F19] border border-white/10 flex justify-between items-center text-left">
+              <div class="min-w-0 pr-2"><div class="text-xs font-bold text-white truncate">${esc(b.brand)}</div><div class="text-[11px] text-slate-400">${esc(b.platform)} · PIC: ${esc(b.pic)}</div></div>
+              <span class="text-xs text-slate-400">Edit</span>
+            </button>`).join('')}
+          </div>
+        `);
+        document.getElementById('addNewBrandBtn').onclick = () => openBrandEditor(null);
+        document.querySelectorAll('.edit-b-row').forEach(btn => btn.onclick = () => openBrandEditor(state.brands[Number(btn.dataset.bi)]));
+      };
+
+      document.getElementById('btnOpenSecurity').onclick = () => {
+        openModal(`
+          <h3 class="text-base font-extrabold text-white mb-3">Security &amp; Controls</h3>
+          <div class="space-y-3.5">
+            <label class="flex items-center justify-between gap-3">
+              <div><div class="text-sm font-semibold text-white">Sembunyikan Saldo Saat Dibuka</div><div class="text-xs text-slate-400">Aktifkan Mode Privasi otomatis</div></div>
+              <input id="secAutoHide" type="checkbox" ${state.defaultHide ? 'checked' : ''} class="w-5 h-5 accent-emerald-500" />
+            </label>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">PIN 4-Digit (kosongkan untuk nonaktif)</label>
+              <input id="secPin" type="password" inputmode="numeric" maxlength="4" value="${esc(state.pin)}" placeholder="••••" class="w-full h-11 px-3.5 rounded-xl bg-[#0B0F19] border border-white/10 text-sm text-white" />
+            </div>
+            <button id="secSave" type="button" class="w-full h-11 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-sm">Simpan Keamanan</button>
+          </div>
+        `);
+        document.getElementById('secSave').onclick = async () => {
+          const p = document.getElementById('secPin').value.trim();
+          if (p && !/^\d{4}$/.test(p)) { showToast('PIN harus tepat 4 angka', true); return; }
+          state.pin = p;
+          state.defaultHide = document.getElementById('secAutoHide').checked;
+          await saveSettings();
+          closeModal();
+          renderSettingsInfo();
+          showToast('Pengaturan keamanan disimpan');
+        };
+      };
+
+      document.getElementById('btnOpenCurrency').onclick = () => {
+        const opts = [['IDR','Indonesian Rupiah (Rp)'],['USD','US Dollar ($)'],['MYR','Malaysian Ringgit (RM)'],['SGD','Singapore Dollar (S$)']];
+        openModal(`
+          <h3 class="text-base font-extrabold text-white mb-3">Pilih Mata Uang</h3>
+          <div class="space-y-2">
+            ${opts.map(([c, l]) => `<button type="button" data-cur="${c}" class="cur-btn w-full p-3 rounded-xl text-left flex justify-between border ${state.currency === c ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 font-bold' : 'bg-[#0B0F19] border-white/10 text-white'}"><span>${l}</span>${state.currency === c ? '<span>✓</span>' : ''}</button>`).join('')}
+          </div>
+        `);
+        document.querySelectorAll('.cur-btn').forEach(b => b.onclick = async () => {
+          state.currency = b.dataset.cur;
+          await saveSettings();
+          closeModal();
+          renderAll();
+          showToast('Mata uang diubah ke ' + state.currency);
+        });
+      };
+
+      document.getElementById('btnOpenPrefs').onclick = () => {
+        openModal(`
+          <h3 class="text-base font-extrabold text-white mb-3">App Preferences</h3>
+          <div class="space-y-3">
+            <div class="text-xs text-slate-400">Platform Default saat Input Video Baru</div>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" data-dp="Instagram" class="dp-btn h-10 rounded-xl text-xs font-bold border">Instagram</button>
+              <button type="button" data-dp="TikTok" class="dp-btn h-10 rounded-xl text-xs font-bold border">TikTok</button>
+            </div>
+            <button id="clearCacheBtn" type="button" class="w-full h-10 rounded-xl border border-white/15 text-xs font-semibold text-slate-300">Bersihkan Cache IndexedDB</button>
+          </div>
+        `);
+        function syncDp() {
+          document.querySelectorAll('.dp-btn').forEach(b => {
+            const act = b.dataset.dp === state.defaultPlatform;
+            b.className = 'dp-btn h-10 rounded-xl text-xs font-bold border ' + (act ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300' : 'bg-[#0B0F19] border-white/10 text-slate-400');
+          });
+        }
+        syncDp();
+        document.querySelectorAll('.dp-btn').forEach(b => b.onclick = async () => {
+          state.defaultPlatform = b.dataset.dp;
+          await saveSettings();
+          syncDp();
+          renderSettingsInfo();
+        });
+        document.getElementById('clearCacheBtn').onclick = async () => {
+          await idbSet('cache_' + state.activeSheetId, null);
+          closeModal();
+          showToast('Cache lokal dibersihkan');
+        };
+      };
+
+      document.getElementById('btnOpenHelp').onclick = () => openModal(`
+        <h3 class="text-base font-extrabold text-white mb-2">Help &amp; Support</h3>
+        <p class="text-xs text-slate-300 leading-relaxed space-y-2">
+          1. Tempel URL API Pusat (/exec) sekali saja di <strong>Pengaturan → Buku &amp; Sinkronisasi</strong>.<br/><br/>
+          2. Jika sinyal hilang saat input video, data otomatis masuk antrean <strong>IndexedDB</strong> dan terkirim saat internet kembali.<br/><br/>
+          3. Untuk ganti buku bulanan/tahunan atau beda agensi, duplikat file Google Sheets lalu tempel link-nya di menu <strong>Buku &amp; Sinkronisasi</strong>.
+        </p>
+      `);
+
+      document.getElementById('btnOpenPrivacy').onclick = () => openModal(`
+        <h3 class="text-base font-extrabold text-white mb-2">Privacy Policy</h3>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          KasEditor adalah aplikasi pencatatan pribadi. Seluruh data karya, daftar brand, URL API, dan nominal pemasukan tersimpan eksklusif di Google Drive pribadi Anda serta IndexedDB perangkat ini tanpa server pihak ketiga.
+        </p>
+      `);
+
+      // =====================================================================
+      // NAVIGATION & GLOBAL EVENTS
+      // =====================================================================
+      function switchTab(t) {
+        state.tab = t;
+        el.viewSummary.classList.toggle('hidden', t !== 'summary');
+        el.viewLogs.classList.toggle('hidden', t !== 'logs');
+        el.viewSettings.classList.toggle('hidden', t !== 'settings');
+        el.fabAddBtn.classList.toggle('hidden', t === 'settings');
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      document.querySelectorAll('.nav-item').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+      document.querySelectorAll('.sfilter-btn').forEach(b => b.onclick = () => {
+        state.summaryFilter = b.dataset.sfilter;
+        document.querySelectorAll('.sfilter-btn').forEach(x => {
+          const act = x.dataset.sfilter === state.summaryFilter;
+          x.className = 'sfilter-btn px-2.5 py-1 rounded-lg ' + (act ? 'bg-indigo-500/25 text-indigo-200' : 'text-slate-400');
+        });
+        renderSummary();
+      });
+      document.querySelectorAll('.lfilter-btn').forEach(b => b.onclick = () => {
+        state.logFilter = b.dataset.lfilter;
+        document.querySelectorAll('.lfilter-btn').forEach(x => {
+          const act = x.dataset.lfilter === state.logFilter;
+          x.className = 'lfilter-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border ' + (act ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/35' : 'bg-[#131926] text-slate-400 border-white/10');
+        });
+        renderLogs();
+      });
+
+      el.logSearchInput.oninput = (e) => { state.logSearch = e.target.value; renderLogs(); };
+      el.loadMoreLogsBtn.onclick = () => { state.visibleLogLimit += 30; renderLogs(); };
+      el.brandList.onclick = (e) => {
+        const row = e.target.closest('.brand-row');
+        if (row) openVideoModal(null, row.dataset.qbrand, row.dataset.qplat);
+      };
+      el.logList.onclick = (e) => {
+        const btn = e.target.closest('.edit-log-btn');
+        if (!btn) return;
+        const found = state.logs.find(x => Number(x.rowIndex) === Number(btn.dataset.erow));
+        if (found) openVideoModal(found);
+      };
+
+      el.fabAddBtn.onclick = () => openVideoModal(null);
+      el.refreshBtn.onclick = () => fetchLive(true);
+      document.getElementById('privacyToggleBtn').onclick = async () => {
+        state.hideIncome = !state.hideIncome;
+        await saveSettings();
+        renderAll();
+        showToast(state.hideIncome ? 'Mode Privasi Saldo aktif' : 'Nominal ditampilkan');
+      };
+      el.toggleNotif.onchange = async (e) => {
+        state.notif = e.target.checked;
+        await saveSettings();
+      };
+      el.modalBackdrop.onclick = (e) => { if (e.target === el.modalBackdrop) closeModal(); };
+      el.closePickerBtn.onclick = () => el.pickerBackdrop.classList.remove('open');
+      el.pickerBackdrop.onclick = (e) => { if (e.target === el.pickerBackdrop) el.pickerBackdrop.classList.remove('open'); };
+      window.addEventListener('online', () => fetchLive(true));
+
+      // PIN Keypad
+      let pinEntered = '';
+      function drawPinDots(wrong) {
+        document.querySelectorAll('.pin-dot').forEach((d, i) => {
+          const filled = i < pinEntered.length;
+          d.className = 'pin-dot w-3.5 h-3.5 rounded-full border transition-all ' + (wrong ? 'bg-rose-500 border-rose-400' : filled ? 'bg-emerald-400 border-emerald-400' : 'bg-slate-800 border-slate-700');
+        });
+      }
+      document.querySelectorAll('.pin-key').forEach(k => k.onclick = () => {
+        if (pinEntered.length >= 4) return;
+        pinEntered += k.dataset.pin;
+        drawPinDots(false);
+        if (pinEntered.length === 4) {
+          if (pinEntered === state.pin) {
+            el.pinLock.classList.add('hidden');
+            pinEntered = '';
+          } else {
+            el.pinHint.textContent = 'PIN salah, coba lagi';
+            el.pinHint.className = 'text-xs text-rose-400 mt-1';
+            drawPinDots(true);
+            setTimeout(() => { pinEntered = ''; drawPinDots(false); }, 420);
+          }
+        }
+      });
+      document.getElementById('pinBackspaceBtn').onclick = () => {
+        pinEntered = pinEntered.slice(0, -1);
+        drawPinDots(false);
+      };
+
+      // =====================================================================
+      // BOOTSTRAP
+      // =====================================================================
+      async function boot() {
+        const saved = await idbGet('settings', null);
+        if (saved) {
+          state.apiUrl = saved.apiUrl || '';
+          state.activeSheetId = saved.activeSheetId || DEFAULT_SHEET_ID;
+          if (Array.isArray(saved.books) && saved.books.length) state.books = saved.books;
+          state.currency = saved.currency || 'IDR';
+          state.defaultHide = !!saved.defaultHide;
+          state.hideIncome = state.defaultHide ? true : !!saved.hideIncome;
+          state.notif = saved.notif !== false;
+          state.defaultPlatform = saved.defaultPlatform || 'Instagram';
+          state.pin = saved.pin || '';
+        }
+        state.offlineQueue = await idbGet('offlineQueue', []);
+        await loadBookCache(state.activeSheetId);
+        renderAll();
+
+        if ('serviceWorker' in navigator && location.protocol === 'https:') {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        }
+
+        setTimeout(() => {
+          el.splash.style.opacity = '0';
+          setTimeout(() => el.splash.classList.add('hidden'), 480);
+          if (state.pin.length === 4) el.pinLock.classList.remove('hidden');
+        }, 900);
+
+        if (state.apiUrl) fetchLive(false);
+      }
+      boot();
+    })();
+  </script>
+</body>
+</html>
