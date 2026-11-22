@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kaseditor-pwa-v1.1';
+const CACHE_NAME = 'kaseditor-pwa-v2.0';
 const ASSETS = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {

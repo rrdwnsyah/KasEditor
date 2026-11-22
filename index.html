@@ -247,6 +247,140 @@
     </main>
 
     <!-- TAB 3: PENGATURAN -->
+    <!-- ================= TAB 3: INSIGHTS ================= -->
+    <main id="viewInsights" class="hidden space-y-4">
+      <div class="flex items-center justify-between gap-2">
+        <div>
+          <h2 class="text-base font-extrabold text-white tracking-tight">Insights & Produktivitas</h2>
+          <p class="text-xs text-slate-400">Analisis pemasukan, tren, dan performa brand</p>
+        </div>
+        <button id="btnCustomizeInsights" type="button"
+                class="pressable px-3 py-2 rounded-xl bg-[#131926] border border-white/10 text-xs font-bold text-emerald-300 flex items-center gap-1.5 shrink-0">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          <span>Atur Widget</span>
+        </button>
+      </div>
+
+      <!-- Custom Filter Card -->
+      <section class="glass-card rounded-2xl p-3.5 space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Filter Data</span>
+          <button id="btnResetInsightFilter" type="button" class="text-[11px] font-semibold text-indigo-300 hover:text-indigo-200">Reset</button>
+        </div>
+
+        <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+          <button type="button" data-irange="ALL" class="irange-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/35">Semua</button>
+          <button type="button" data-irange="MONTH" class="irange-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0B0F19] text-slate-400 border border-white/10">Bulan Ini</button>
+          <button type="button" data-irange="30D" class="irange-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0B0F19] text-slate-400 border border-white/10">30 Hari</button>
+          <button type="button" data-irange="YEAR" class="irange-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0B0F19] text-slate-400 border border-white/10">Tahun Ini</button>
+          <button type="button" data-irange="CUSTOM" class="irange-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#0B0F19] text-slate-400 border border-white/10">Kustom</button>
+        </div>
+
+        <div id="insightCustomDates" class="hidden grid grid-cols-2 gap-2">
+          <div>
+            <label for="insightStartInput" class="block text-[10px] font-semibold text-slate-400 mb-1">Dari Tanggal</label>
+            <input id="insightStartInput" type="date" class="w-full px-2.5 py-2 rounded-xl bg-[#0B0F19] border border-white/10 text-xs text-white" />
+          </div>
+          <div>
+            <label for="insightEndInput" class="block text-[10px] font-semibold text-slate-400 mb-1">Sampai Tanggal</label>
+            <input id="insightEndInput" type="date" class="w-full px-2.5 py-2 rounded-xl bg-[#0B0F19] border border-white/10 text-xs text-white" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label for="insightPlatformSelect" class="block text-[10px] font-semibold text-slate-400 mb-1">Platform</label>
+            <select id="insightPlatformSelect" class="w-full px-3 py-2 rounded-xl bg-[#0B0F19] border border-white/10 text-xs font-semibold text-white">
+              <option value="ALL">Semua Platform</option>
+              <option value="Instagram">Instagram</option>
+              <option value="TikTok">TikTok</option>
+            </select>
+          </div>
+          <div>
+            <label for="insightBrandSelect" class="block text-[10px] font-semibold text-slate-400 mb-1">Brand</label>
+            <select id="insightBrandSelect" class="w-full px-3 py-2 rounded-xl bg-[#0B0F19] border border-white/10 text-xs font-semibold text-white">
+              <option value="ALL">Semua Brand</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Widget 1: KPI 2x2 -->
+      <section id="widgetInsightKpi" class="grid grid-cols-2 gap-2.5">
+        <div class="glass-card rounded-2xl p-3.5">
+          <div class="text-[11px] font-semibold text-slate-400">Total Pemasukan</div>
+          <div id="insKpiTotalInc" class="text-lg font-extrabold text-emerald-400 mt-1 tabular-nums">Rp0</div>
+          <div id="insKpiTotalSub" class="text-[10px] text-slate-500 mt-0.5">Sesuai filter aktif</div>
+        </div>
+        <div class="glass-card rounded-2xl p-3.5">
+          <div class="text-[11px] font-semibold text-slate-400">Pemasukan Bulan Ini</div>
+          <div id="insKpiMonthInc" class="text-lg font-extrabold text-white mt-1 tabular-nums">Rp0</div>
+          <div id="insKpiMonthSub" class="text-[10px] text-slate-500 mt-0.5">Bulan berjalan</div>
+        </div>
+        <div class="glass-card rounded-2xl p-3.5">
+          <div class="text-[11px] font-semibold text-slate-400">Rata-rata / Minggu</div>
+          <div id="insKpiAvgWeek" class="text-lg font-extrabold text-indigo-300 mt-1 tabular-nums">0 vid</div>
+          <div id="insKpiAvgSub" class="text-[10px] text-slate-500 mt-0.5">Video berstatus ACC</div>
+        </div>
+        <div class="glass-card rounded-2xl p-3.5">
+          <div class="text-[11px] font-semibold text-slate-400">Produktivitas ACC</div>
+          <div id="insKpiAccCount" class="text-lg font-extrabold text-white mt-1 tabular-nums">0 vid</div>
+          <div id="insKpiAccRate" class="text-[10px] text-slate-500 mt-0.5">0% rasio ACC</div>
+        </div>
+      </section>
+
+      <!-- Widget 2: Smart Insights Otomatis -->
+      <section id="widgetInsightSmart" class="glass-card rounded-2xl p-4 space-y-2.5">
+        <div class="flex items-center gap-2">
+          <span class="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-300 flex items-center justify-center">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </span>
+          <h3 class="text-sm font-extrabold text-white">Smart Insights Otomatis</h3>
+        </div>
+        <div id="insSmartList" class="space-y-2"></div>
+      </section>
+
+      <!-- Widget 3: Tren Pemasukan Bulanan -->
+      <section id="widgetInsightIncomeTrend" class="glass-card rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm font-extrabold text-white">Tren Pemasukan Bulanan</h3>
+            <p class="text-[11px] text-slate-400">Total pemasukan video IG ACC per bulan</p>
+          </div>
+          <span id="insPeakMonthBadge" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/25"></span>
+        </div>
+        <div id="insIncomeChart" class="pt-2"></div>
+      </section>
+
+      <!-- Widget 4: Produktivitas (Harian / Mingguan / Bulanan / Tahunan) -->
+      <section id="widgetInsightProductivity" class="glass-card rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <h3 class="text-sm font-extrabold text-white">Grafik Produktivitas</h3>
+            <p class="text-[11px] text-slate-400">Jumlah video ACC berdasarkan periode</p>
+          </div>
+          <div class="flex bg-[#0B0F19] p-1 rounded-xl border border-white/10 text-[10px] font-bold">
+            <button type="button" data-igran="daily" class="igran-btn px-2 py-1 rounded-lg text-slate-400">Hari</button>
+            <button type="button" data-igran="weekly" class="igran-btn px-2 py-1 rounded-lg bg-indigo-500/25 text-indigo-200">Minggu</button>
+            <button type="button" data-igran="monthly" class="igran-btn px-2 py-1 rounded-lg text-slate-400">Bulan</button>
+            <button type="button" data-igran="yearly" class="igran-btn px-2 py-1 rounded-lg text-slate-400">Tahun</button>
+          </div>
+        </div>
+        <div id="insProdChart" class="pt-2"></div>
+      </section>
+
+      <!-- Widget 5: Peringkat Pendapatan Brand -->
+      <section id="widgetInsightBrandRank" class="glass-card rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-extrabold text-white">Brand Pendapatan Terbesar</h3>
+            <p class="text-[11px] text-slate-400">Urutan kontribusi pemasukan & jumlah ACC</p>
+          </div>
+        </div>
+        <div id="insBrandRankList" class="space-y-3"></div>
+      </section>
+    </main>
+
     <main id="viewSettings" class="hidden space-y-5">
       <div>
         <div class="text-xs font-bold text-slate-400 px-1 mb-2">Workspace &amp; Data</div>
@@ -369,7 +503,7 @@
 
       <div class="text-center pt-2 pb-4">
         <div class="text-xs font-bold text-slate-300 tracking-wide">Made by Rrdwnsyah</div>
-        <div class="text-[11px] text-slate-500 mt-0.5">KasEditor v1.1.0 · PWA IndexedDB</div>
+        <div class="text-[11px] text-slate-500 mt-0.5">KasEditor v2.0.0 · PWA IndexedDB</div>
       </div>
     </main>
   </div>
@@ -381,26 +515,32 @@
     <span>Input Video</span>
   </button>
 
-  <!-- BOTTOM NAV (3 TABS) -->
+  <!-- BOTTOM NAV (4 TABS) -->
   <nav class="fixed bottom-0 inset-x-0 z-20 bg-[#0B0F19]/95 backdrop-blur-xl border-t border-white/10">
-    <div class="max-w-lg mx-auto grid grid-cols-3 py-2 px-2">
+    <div class="max-w-lg mx-auto grid grid-cols-4 py-2 px-1">
       <button type="button" data-tab="summary" class="nav-item active flex flex-col items-center gap-1 py-1 text-slate-400">
-        <span class="nav-pill w-12 h-7 rounded-full flex items-center justify-center">
+        <span class="nav-pill w-11 h-7 rounded-full flex items-center justify-center">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
         </span>
-        <span class="text-[11px] font-semibold">Ringkasan</span>
+        <span class="text-[10px] font-semibold">Ringkasan</span>
       </button>
       <button type="button" data-tab="logs" class="nav-item flex flex-col items-center gap-1 py-1 text-slate-400">
-        <span class="nav-pill w-12 h-7 rounded-full flex items-center justify-center">
+        <span class="nav-pill w-11 h-7 rounded-full flex items-center justify-center">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 13 5.22 3.48a.5.5 0 0 0 .78-.42V7.87a.5.5 0 0 0-.75-.43L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
         </span>
-        <span class="text-[11px] font-semibold">Log Video</span>
+        <span class="text-[10px] font-semibold">Log Video</span>
+      </button>
+      <button type="button" data-tab="insights" class="nav-item flex flex-col items-center gap-1 py-1 text-slate-400">
+        <span class="nav-pill w-11 h-7 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7" rx="1"/><rect x="12" y="6" width="3" height="11" rx="1"/><rect x="17" y="13" width="3" height="4" rx="1"/></svg>
+        </span>
+        <span class="text-[10px] font-semibold">Insights</span>
       </button>
       <button type="button" data-tab="settings" class="nav-item flex flex-col items-center gap-1 py-1 text-slate-400">
-        <span class="nav-pill w-12 h-7 rounded-full flex items-center justify-center">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="nav-pill w-11 h-7 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </span>
-        <span class="text-[11px] font-semibold">Pengaturan</span>
+        <span class="text-[10px] font-semibold">Pengaturan</span>
       </button>
     </div>
   </nav>
@@ -528,6 +668,13 @@
         logFilter: 'ALL',
         logSearch: '',
         visibleLogLimit: 30,
+        insightRange: 'ALL',
+        insightStart: '',
+        insightEnd: '',
+        insightPlatform: 'ALL',
+        insightBrand: 'ALL',
+        insightGranularity: 'weekly',
+        insightWidgets: { kpi: true, smart: true, incomeTrend: true, productivity: true, brandRank: true },
         loading: false
       };
 
@@ -560,7 +707,33 @@
         loadMoreLogsBtn: document.getElementById('loadMoreLogsBtn'),
         viewSummary: document.getElementById('viewSummary'),
         viewLogs: document.getElementById('viewLogs'),
+        viewInsights: document.getElementById('viewInsights'),
         viewSettings: document.getElementById('viewSettings'),
+        btnCustomizeInsights: document.getElementById('btnCustomizeInsights'),
+        btnResetInsightFilter: document.getElementById('btnResetInsightFilter'),
+        insightCustomDates: document.getElementById('insightCustomDates'),
+        insightStartInput: document.getElementById('insightStartInput'),
+        insightEndInput: document.getElementById('insightEndInput'),
+        insightPlatformSelect: document.getElementById('insightPlatformSelect'),
+        insightBrandSelect: document.getElementById('insightBrandSelect'),
+        widgetInsightKpi: document.getElementById('widgetInsightKpi'),
+        widgetInsightSmart: document.getElementById('widgetInsightSmart'),
+        widgetInsightIncomeTrend: document.getElementById('widgetInsightIncomeTrend'),
+        widgetInsightProductivity: document.getElementById('widgetInsightProductivity'),
+        widgetInsightBrandRank: document.getElementById('widgetInsightBrandRank'),
+        insKpiTotalInc: document.getElementById('insKpiTotalInc'),
+        insKpiTotalSub: document.getElementById('insKpiTotalSub'),
+        insKpiMonthInc: document.getElementById('insKpiMonthInc'),
+        insKpiMonthSub: document.getElementById('insKpiMonthSub'),
+        insKpiAvgWeek: document.getElementById('insKpiAvgWeek'),
+        insKpiAvgSub: document.getElementById('insKpiAvgSub'),
+        insKpiAccCount: document.getElementById('insKpiAccCount'),
+        insKpiAccRate: document.getElementById('insKpiAccRate'),
+        insSmartList: document.getElementById('insSmartList'),
+        insPeakMonthBadge: document.getElementById('insPeakMonthBadge'),
+        insIncomeChart: document.getElementById('insIncomeChart'),
+        insProdChart: document.getElementById('insProdChart'),
+        insBrandRankList: document.getElementById('insBrandRankList'),
         fabAddBtn: document.getElementById('fabAddBtn'),
         modalBackdrop: document.getElementById('modalBackdrop'),
         modalContent: document.getElementById('modalContent'),
@@ -620,7 +793,8 @@
           defaultHide: state.defaultHide,
           notif: state.notif,
           defaultPlatform: state.defaultPlatform,
-          pin: state.pin
+          pin: state.pin,
+          insightWidgets: state.insightWidgets
         });
       }
 
@@ -751,6 +925,7 @@
 
         renderSummary();
         renderLogs();
+        renderInsights();
         renderSettingsInfo();
       }
 
@@ -1297,14 +1472,348 @@
       `);
 
       // =====================================================================
+      // INSIGHTS ENGINE (CLIENT-SIDE ANALYTICS)
+      // =====================================================================
+      function parseDateSafe(str) {
+        if (!str) return null;
+        const m = String(str).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (!m) return null;
+        return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+      }
+
+      function getIsoWeekKey(d) {
+        const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        const dayNum = tmp.getUTCDay() || 7;
+        tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
+        const wk = Math.ceil((((tmp - yearStart) / 86400000) + 1) / 7);
+        return tmp.getUTCFullYear() + '-W' + String(wk).padStart(2, '0');
+      }
+
+      function fmtMonthLabel(ym) {
+        const parts = ym.split('-');
+        const names = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+        const mIdx = Math.max(0, Math.min(11, Number(parts[1]) - 1));
+        return names[mIdx] + ' ' + String(parts[0]).slice(2);
+      }
+
+      function renderInsights() {
+        // Sync brand dropdown options without losing selection
+        const uniqueBrands = Array.from(new Set([
+          ...state.brands.map(b => b.name),
+          ...state.logs.map(l => l.brand)
+        ].filter(Boolean))).sort();
+        const prevBrand = state.insightBrand;
+        el.insightBrandSelect.innerHTML = '<option value="ALL">Semua Brand</option>' +
+          uniqueBrands.map(b => '<option value="' + esc(b) + '">' + esc(b) + '</option>').join('');
+        el.insightBrandSelect.value = uniqueBrands.includes(prevBrand) ? prevBrand : 'ALL';
+        state.insightBrand = el.insightBrandSelect.value;
+
+        // Widget visibility
+        const w = state.insightWidgets || { kpi: true, smart: true, incomeTrend: true, productivity: true, brandRank: true };
+        el.widgetInsightKpi.classList.toggle('hidden', !w.kpi);
+        el.widgetInsightSmart.classList.toggle('hidden', !w.smart);
+        el.widgetInsightIncomeTrend.classList.toggle('hidden', !w.incomeTrend);
+        el.widgetInsightProductivity.classList.toggle('hidden', !w.productivity);
+        el.widgetInsightBrandRank.classList.toggle('hidden', !w.brandRank);
+
+        // Reference date: latest log date or today so sample & real data both feel alive
+        const now = new Date();
+        const todayYm = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        const allDates = state.logs.map(l => parseDateSafe(l.date)).filter(Boolean).sort((a, b) => a - b);
+        const refNow = allDates.length && allDates[allDates.length - 1] > now ? allDates[allDates.length - 1] : now;
+        const refYm = refNow.getFullYear() + '-' + String(refNow.getMonth() + 1).padStart(2, '0');
+
+        const filtered = state.logs.filter(l => {
+          if (state.insightPlatform !== 'ALL' && l.platform !== state.insightPlatform) return false;
+          if (state.insightBrand !== 'ALL' && l.brand !== state.insightBrand) return false;
+          const d = parseDateSafe(l.date);
+          if (state.insightRange === 'MONTH') {
+            return String(l.date || '').startsWith(refYm);
+          }
+          if (state.insightRange === '30D' && d) {
+            const diff = (refNow - d) / 86400000;
+            return diff >= -1 && diff <= 30;
+          }
+          if (state.insightRange === 'YEAR') {
+            return String(l.date || '').startsWith(String(refNow.getFullYear()));
+          }
+          if (state.insightRange === 'CUSTOM') {
+            if (state.insightStart && String(l.date || '') < state.insightStart) return false;
+            if (state.insightEnd && String(l.date || '') > state.insightEnd) return false;
+          }
+          return true;
+        });
+
+        const accLogs = filtered.filter(l => l.status === 'ACC');
+        const totalInc = accLogs.reduce((s, l) => s + calcInc(l), 0);
+        const monthLogs = state.logs.filter(l => l.status === 'ACC' && String(l.date || '').startsWith(refYm));
+        const monthInc = monthLogs.reduce((s, l) => s + calcInc(l), 0);
+
+        // Weekly average over active span
+        const fDates = accLogs.map(l => parseDateSafe(l.date)).filter(Boolean).sort((a, b) => a - b);
+        let weeksSpan = 1;
+        if (fDates.length >= 2) {
+          const daysDiff = Math.max(1, (fDates[fDates.length - 1] - fDates[0]) / 86400000 + 1);
+          weeksSpan = Math.max(1, daysDiff / 7);
+        }
+        const avgPerWeek = accLogs.length ? (accLogs.length / weeksSpan) : 0;
+        const accRate = filtered.length ? Math.round((accLogs.length / filtered.length) * 100) : 0;
+
+        // KPI values (respect privacy eye toggle)
+        el.insKpiTotalInc.textContent = state.hideIncome ? sym() + '••••••' : fmtMoney(totalInc);
+        el.insKpiTotalSub.textContent = accLogs.filter(l => l.platform === 'Instagram').length + ' video IG ACC';
+        el.insKpiMonthInc.textContent = state.hideIncome ? sym() + '••••••' : fmtMoney(monthInc);
+        el.insKpiMonthSub.textContent = fmtMonthLabel(refYm) + ' (' + monthLogs.length + ' ACC)';
+        el.insKpiAvgWeek.textContent = avgPerWeek.toFixed(1).replace('.', ',') + ' vid';
+        el.insKpiAvgSub.textContent = 'Rentang ' + Math.max(1, Math.round(weeksSpan)) + ' minggu aktif';
+        el.insKpiAccCount.textContent = accLogs.length + ' vid';
+        el.insKpiAccRate.textContent = accRate + '% dari ' + filtered.length + ' total log';
+
+        // Brand contribution map
+        const brandMap = {};
+        accLogs.forEach(l => {
+          const k = l.brand || 'Lainnya';
+          if (!brandMap[k]) brandMap[k] = { name: k, count: 0, igCount: 0, ttCount: 0, inc: 0 };
+          brandMap[k].count++;
+          if (l.platform === 'Instagram') brandMap[k].igCount++;
+          if (l.platform === 'TikTok') brandMap[k].ttCount++;
+          brandMap[k].inc += calcInc(l);
+        });
+        const rankedBrands = Object.values(brandMap).sort((a, b) => (b.inc - a.inc) || (b.count - a.count));
+
+        // Monthly income trend
+        const monthMap = {};
+        accLogs.forEach(l => {
+          const ym = String(l.date || '').slice(0, 7);
+          if (!/^\d{4}-\d{2}$/.test(ym)) return;
+          monthMap[ym] = (monthMap[ym] || 0) + calcInc(l);
+        });
+        const monthKeys = Object.keys(monthMap).sort().slice(-6);
+        let peakMonthKey = '';
+        let peakMonthVal = 0;
+        monthKeys.forEach(k => { if (monthMap[k] >= peakMonthVal) { peakMonthVal = monthMap[k]; peakMonthKey = k; } });
+
+        // Smart Insights
+        const insights = [];
+        if (rankedBrands.length > 0 && totalInc > 0) {
+          const top = rankedBrands[0];
+          const pct = Math.round((top.inc / totalInc) * 100);
+          insights.push({
+            tone: 'emerald',
+            text: top.name + ' menyumbang ' + pct + '% pemasukan (' + (state.hideIncome ? sym() + '••••' : fmtMoney(top.inc)) + ' dari ' + top.count + ' video ACC).'
+          });
+        }
+        if (accLogs.length > 0) {
+          insights.push({
+            tone: 'indigo',
+            text: 'Kecepatan produksi rata-rata ' + avgPerWeek.toFixed(1).replace('.', ',') + ' video ACC per minggu dengan rasio ACC ' + accRate + '%.'
+          });
+        }
+        if (peakMonthKey && peakMonthVal > 0) {
+          insights.push({
+            tone: 'amber',
+            text: 'Bulan terbaik pada filter ini adalah ' + fmtMonthLabel(peakMonthKey) + ' dengan total ' + (state.hideIncome ? sym() + '••••' : fmtMoney(peakMonthVal)) + '.'
+          });
+        }
+        const revCount = filtered.filter(l => l.status === 'Revisi').length;
+        if (revCount > 0) {
+          insights.push({
+            tone: 'rose',
+            text: 'Terdapat ' + revCount + ' video berstatus Revisi yang belum masuk hitungan pemasukan.'
+          });
+        }
+        if (insights.length === 0) {
+          el.insSmartList.innerHTML = '<div class="text-xs text-slate-400 py-2">Belum ada data pada filter yang dipilih.</div>';
+        } else {
+          const dotCol = { emerald: 'bg-emerald-400', indigo: 'bg-indigo-400', amber: 'bg-amber-400', rose: 'bg-rose-400' };
+          el.insSmartList.innerHTML = insights.map(it => `
+            <div class="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-[#0B0F19]/80 border border-white/5">
+              <span class="w-2 h-2 rounded-full mt-1.5 shrink-0 ${dotCol[it.tone] || 'bg-emerald-400'}"></span>
+              <p class="text-xs text-slate-200 leading-relaxed">${esc(it.text)}</p>
+            </div>
+          `).join('');
+        }
+
+        // Render Monthly Income Bar Chart
+        el.insPeakMonthBadge.textContent = peakMonthKey ? 'Puncak: ' + fmtMonthLabel(peakMonthKey) : 'Belum ada data';
+        if (monthKeys.length === 0) {
+          el.insIncomeChart.innerHTML = '<div class="text-center py-6 text-xs text-slate-500">Belum ada pemasukan pada periode ini.</div>';
+        } else {
+          const maxInc = Math.max(1, ...monthKeys.map(k => monthMap[k]));
+          el.insIncomeChart.innerHTML = '<div class="grid gap-2 items-end h-36 pt-5" style="grid-template-columns:repeat(' + monthKeys.length + ',minmax(0,1fr))">' +
+            monthKeys.map(k => {
+              const val = monthMap[k];
+              const hPct = Math.max(10, Math.round((val / maxInc) * 100));
+              const isPeak = k === peakMonthKey;
+              const shortVal = state.hideIncome ? '•••' : (val >= 1000000 ? (val / 1000000).toFixed(1) + 'jt' : Math.round(val / 1000) + 'rb');
+              return `
+                <div class="flex flex-col items-center justify-end h-full gap-1.5">
+                  <span class="text-[10px] font-bold tabular-nums ${isPeak ? 'text-emerald-300' : 'text-slate-400'}">${esc(shortVal)}</span>
+                  <div class="w-full max-w-[38px] rounded-t-xl transition-all duration-300 ${isPeak ? 'bg-gradient-to-t from-emerald-600 to-emerald-400 shadow-lg shadow-emerald-950/60' : 'bg-indigo-500/45'}" style="height:${hPct}%"></div>
+                  <span class="text-[10px] font-semibold text-slate-400 truncate max-w-full">${esc(fmtMonthLabel(k))}</span>
+                </div>
+              `;
+            }).join('') + '</div>';
+        }
+
+        // Render Productivity Chart (daily / weekly / monthly / yearly)
+        const prodMap = {};
+        accLogs.forEach(l => {
+          const d = parseDateSafe(l.date);
+          if (!d) return;
+          let key = '';
+          if (state.insightGranularity === 'daily') key = String(l.date).slice(0, 10);
+          else if (state.insightGranularity === 'weekly') key = getIsoWeekKey(d);
+          else if (state.insightGranularity === 'monthly') key = String(l.date).slice(0, 7);
+          else key = String(d.getFullYear());
+          prodMap[key] = (prodMap[key] || 0) + 1;
+        });
+        const prodKeys = Object.keys(prodMap).sort().slice(-7);
+        if (prodKeys.length === 0) {
+          el.insProdChart.innerHTML = '<div class="text-center py-6 text-xs text-slate-500">Belum ada video ACC pada periode ini.</div>';
+        } else {
+          const maxP = Math.max(1, ...prodKeys.map(k => prodMap[k]));
+          el.insProdChart.innerHTML = '<div class="grid gap-2 items-end h-32 pt-4" style="grid-template-columns:repeat(' + prodKeys.length + ',minmax(0,1fr))">' +
+            prodKeys.map(k => {
+              const cnt = prodMap[k];
+              const hPct = Math.max(12, Math.round((cnt / maxP) * 100));
+              let lbl = k;
+              if (state.insightGranularity === 'daily') lbl = k.slice(8, 10) + '/' + k.slice(5, 7);
+              else if (state.insightGranularity === 'weekly') lbl = k.split('-')[1] || k;
+              else if (state.insightGranularity === 'monthly') lbl = fmtMonthLabel(k);
+              return `
+                <div class="flex flex-col items-center justify-end h-full gap-1.5">
+                  <span class="text-[10px] font-bold text-slate-200 tabular-nums">${cnt}</span>
+                  <div class="w-full max-w-[34px] rounded-t-xl bg-gradient-to-t from-indigo-600 to-cyan-400 transition-all duration-300" style="height:${hPct}%"></div>
+                  <span class="text-[10px] font-semibold text-slate-400 truncate max-w-full">${esc(lbl)}</span>
+                </div>
+              `;
+            }).join('') + '</div>';
+        }
+
+        // Render Top Brand Revenue Ranking
+        if (rankedBrands.length === 0) {
+          el.insBrandRankList.innerHTML = '<div class="text-center py-5 text-xs text-slate-500">Belum ada kontribusi brand pada filter ini.</div>';
+        } else {
+          const maxBInc = Math.max(1, rankedBrands[0].inc, rankedBrands[0].count);
+          el.insBrandRankList.innerHTML = rankedBrands.slice(0, 6).map((b, idx) => {
+            const pct = totalInc > 0 ? Math.round((b.inc / totalInc) * 100) : Math.round((b.count / Math.max(1, accLogs.length)) * 100);
+            const barW = totalInc > 0 ? Math.max(6, Math.round((b.inc / Math.max(1, rankedBrands[0].inc)) * 100)) : Math.max(6, Math.round((b.count / Math.max(1, rankedBrands[0].count)) * 100));
+            return `
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="w-5 h-5 rounded-md bg-white/5 text-[10px] font-extrabold text-slate-300 flex items-center justify-center shrink-0">${idx + 1}</span>
+                    <span class="text-xs font-bold text-white truncate">${esc(b.name)}</span>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <span class="text-xs font-extrabold ${b.inc > 0 ? 'text-emerald-400' : 'text-slate-400'} tabular-nums">${state.hideIncome ? sym() + '••••' : fmtMoney(b.inc)}</span>
+                    <span class="text-[10px] text-slate-500 ml-1">(${b.count} vid · ${pct}%)</span>
+                  </div>
+                </div>
+                <div class="h-2 rounded-full bg-white/5 overflow-hidden">
+                  <div class="h-full rounded-full ${idx === 0 ? 'bg-emerald-400' : 'bg-indigo-400/80'}" style="width:${barW}%"></div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      el.btnCustomizeInsights.onclick = () => {
+        const w = state.insightWidgets;
+        const rows = [
+          { key: 'kpi', label: 'Kartu Ringkasan KPI (2×2)', desc: 'Total pemasukan, bulan ini, rata-rata/minggu' },
+          { key: 'smart', label: 'Smart Insights Otomatis', desc: 'Ringkasan teks cerdas berbasis data' },
+          { key: 'incomeTrend', label: 'Tren Pemasukan Bulanan', desc: 'Grafik batang pendapatan per bulan' },
+          { key: 'productivity', label: 'Grafik Produktivitas', desc: 'Output harian, mingguan, bulanan, tahunan' },
+          { key: 'brandRank', label: 'Peringkat Pendapatan Brand', desc: 'Daftar brand dengan pemasukan terbesar' }
+        ];
+        openModal(`
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-base font-extrabold text-white">Atur Widget Insights</h3>
+                <p class="text-xs text-slate-400">Pilih metrik yang relevan untuk ditampilkan</p>
+              </div>
+              <button type="button" id="closeWModal" class="text-slate-400 text-sm font-bold px-2 py-1">Tutup</button>
+            </div>
+            <div class="space-y-2">
+              ${rows.map(r => `
+                <label class="flex items-center justify-between gap-3 p-3 rounded-2xl bg-[#0B0F19] border border-white/10 cursor-pointer">
+                  <div class="min-w-0">
+                    <div class="text-xs font-bold text-white">${r.label}</div>
+                    <div class="text-[11px] text-slate-400">${r.desc}</div>
+                  </div>
+                  <input type="checkbox" data-wkey="${r.key}" class="w-toggle w-4 h-4 accent-emerald-500 shrink-0" ${w[r.key] ? 'checked' : ''} />
+                </label>
+              `).join('')}
+            </div>
+            <button id="saveWModal" type="button" class="pressable w-full py-3 rounded-2xl bg-emerald-500 text-slate-950 font-extrabold text-sm">Simpan Tampilan</button>
+          </div>
+        `);
+        document.getElementById('closeWModal').onclick = closeModal;
+        document.getElementById('saveWModal').onclick = async () => {
+          document.querySelectorAll('.w-toggle').forEach(cb => {
+            state.insightWidgets[cb.dataset.wkey] = cb.checked;
+          });
+          await saveSettings();
+          renderInsights();
+          closeModal();
+          showToast('Tampilan Insights disimpan');
+        };
+      };
+
+      document.querySelectorAll('.irange-btn').forEach(b => b.onclick = () => {
+        state.insightRange = b.dataset.irange;
+        document.querySelectorAll('.irange-btn').forEach(x => {
+          const act = x.dataset.irange === state.insightRange;
+          x.className = 'irange-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border ' + (act ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/35' : 'bg-[#0B0F19] text-slate-400 border-white/10');
+        });
+        el.insightCustomDates.classList.toggle('hidden', state.insightRange !== 'CUSTOM');
+        renderInsights();
+      });
+      el.insightStartInput.onchange = (e) => { state.insightStart = e.target.value; renderInsights(); };
+      el.insightEndInput.onchange = (e) => { state.insightEnd = e.target.value; renderInsights(); };
+      el.insightPlatformSelect.onchange = (e) => { state.insightPlatform = e.target.value; renderInsights(); };
+      el.insightBrandSelect.onchange = (e) => { state.insightBrand = e.target.value; renderInsights(); };
+      el.btnResetInsightFilter.onclick = () => {
+        state.insightRange = 'ALL';
+        state.insightStart = '';
+        state.insightEnd = '';
+        state.insightPlatform = 'ALL';
+        state.insightBrand = 'ALL';
+        el.insightStartInput.value = '';
+        el.insightEndInput.value = '';
+        el.insightPlatformSelect.value = 'ALL';
+        el.insightBrandSelect.value = 'ALL';
+        el.insightCustomDates.classList.add('hidden');
+        document.querySelectorAll('.irange-btn').forEach(x => {
+          const act = x.dataset.irange === 'ALL';
+          x.className = 'irange-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border ' + (act ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/35' : 'bg-[#0B0F19] text-slate-400 border-white/10');
+        });
+        renderInsights();
+      };
+      document.querySelectorAll('.igran-btn').forEach(b => b.onclick = () => {
+        state.insightGranularity = b.dataset.igran;
+        document.querySelectorAll('.igran-btn').forEach(x => {
+          const act = x.dataset.igran === state.insightGranularity;
+          x.className = 'igran-btn px-2 py-1 rounded-lg ' + (act ? 'bg-indigo-500/25 text-indigo-200' : 'text-slate-400');
+        });
+        renderInsights();
+      });
+
+      // =====================================================================
       // NAVIGATION & GLOBAL EVENTS
       // =====================================================================
       function switchTab(t) {
         state.tab = t;
         el.viewSummary.classList.toggle('hidden', t !== 'summary');
         el.viewLogs.classList.toggle('hidden', t !== 'logs');
+        el.viewInsights.classList.toggle('hidden', t !== 'insights');
         el.viewSettings.classList.toggle('hidden', t !== 'settings');
-        el.fabAddBtn.classList.toggle('hidden', t === 'settings');
+        el.fabAddBtn.classList.toggle('hidden', t === 'settings' || t === 'insights');
         document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -1401,6 +1910,9 @@
           state.notif = saved.notif !== false;
           state.defaultPlatform = saved.defaultPlatform || 'Instagram';
           state.pin = saved.pin || '';
+          if (saved.insightWidgets && typeof saved.insightWidgets === 'object') {
+            state.insightWidgets = Object.assign(state.insightWidgets, saved.insightWidgets);
+          }
         }
         state.offlineQueue = await idbGet('offlineQueue', []);
         await loadBookCache(state.activeSheetId);

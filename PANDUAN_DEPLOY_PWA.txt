@@ -1,17 +1,9 @@
-PANDUAN DEPLOY KASEDITOR PWA (3 LANGKAH, TANPA CODING / TANPA GIT)
-==================================================================
-
-1. Ekstrak file KasEditor_PWA_Ready.zip ini menjadi 1 folder biasa.
-2. Buka https://app.netlify.com/drop (atau Cloudflare Pages -> Direct Upload) di browser laptop.
-   Tarik dan lepas (drag & drop) folder hasil ekstrak tadi ke halaman tersebut.
-   Dalam beberapa detik akan muncul link HTTPS aplikasi kamu (Rp0 gratis).
-3. Buka link HTTPS itu di Chrome (Android) atau Safari (iPhone):
-   - Android Chrome: ketuk titik tiga -> "Install app" / "Tambahkan ke layar utama".
-   - iPhone Safari : ketuk Share -> "Add to Home Screen".
-   - Buka KasEditor -> masuk tab Pengaturan -> Buku & Sinkronisasi ->
-     tempel URL API Pusat (/exec) kamu -> ketuk "Simpan & Sambungkan".
-
-Catatan:
-- Masalah CORS browser & keamanan URL API sudah otomatis ditangani di dalam kode.
-- URL API (/exec) hanya tersimpan lokal di IndexedDB HP kamu (tidak ikut ter-upload).
-- Jika sinyal hilang, input video masuk antrean offline dan otomatis terkirim saat online.
+PANDUAN UPDATE KASEDITOR PWA v2.0 DI GITHUB PAGES
+================================================
+1. Ekstrak file KasEditor_PWA_Ready.zip ini.
+2. Buka repository KasEditor Anda di GitHub (https://github.com/Rrdwnsyah/KasEditor).
+3. Klik 'Add file' -> 'Upload files'.
+4. Seret file 'index.html' dan 'sw.js' (atau semua isi folder) ke kotak upload untuk menimpa versi lama.
+5. Klik 'Commit changes'.
+6. Tunggu 1-2 menit, lalu buka https://rrdwnsyah.github.io/KasEditor/ dan refresh (atau tutup-buka ulang aplikasi PWA di HP).
+   Data lokal dan URL API di IndexedDB tetap aman dan tidak terhapus.
