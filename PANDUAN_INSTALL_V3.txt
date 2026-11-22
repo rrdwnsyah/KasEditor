@@ -1,0 +1,20 @@
+PANDUAN INSTALL & UPDATE KASEDITOR v3.0
+=======================================
+1. SIAPKAN GEMINI API KEY (30 DETIK, GRATIS)
+   - Buka https://aistudio.google.com/apikey -> Create API key -> salin kode (AIza...).
+
+2. UPDATE APPS SCRIPT API PUSAT (KasEditor_API_Pusat_v3.gs)
+   - Buka Google Apps Script proyek API Pusat Anda -> timpa seluruh isi Code.gs dengan file KasEditor_API_Pusat_v3.gs.
+   - Buka Project Settings (ikon gir kiri bawah) -> Script Properties -> Add script property:
+     * Property: GEMINI_API_KEY   | Value: AIza... (API key Anda)
+   - Klik Deploy -> Manage deployments -> ikon pensil -> Version: New version -> Deploy.
+   - Saat diminta izin akses Google Docs & Google Calendar, klik Allow.
+
+3. UPDATE GITHUB PAGES
+   - Ekstrak KasEditor_PWA_Ready_v3.zip ini.
+   - Buka repo GitHub KasEditor -> Add file -> Upload files -> seret index.html & sw.js untuk menimpa versi lama -> Commit changes.
+   - Tunggu 1-2 menit, lalu refresh https://rrdwnsyah.github.io/KasEditor/
+
+4. CARA BAGIKAN KE PIC (VIEW-ONLY BRIEF TRACKER)
+   - Masuk ke Pengaturan -> klik 'Salin Link PIC (View-Only Brief)'.
+   - PIC hanya melihat daftar Brief Tracker & link bahan, tanpa tab pemasukan dan tanpa data tarif.
